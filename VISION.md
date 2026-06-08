@@ -39,7 +39,6 @@ Canonical security policy and reporting:
 
 - [`SECURITY.md`](SECURITY.md)
 
-
 Venue search can expose location intent. Do not commit real API credentials,
 private endpoints, or user-specific location data.
 
