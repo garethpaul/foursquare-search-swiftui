@@ -7,5 +7,6 @@
 - Required HTTPS for venue and image loading.
 - Removed runtime `print` diagnostics from network loading.
 - Added empty/error venue states and safer optional rendering in SwiftUI views.
+- Stopped image loading from recursively refetching after data changes.
 - Added `make check` and `scripts/check-baseline.sh` for static transport and
   configuration verification.
