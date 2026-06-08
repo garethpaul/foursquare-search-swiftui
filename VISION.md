@@ -46,3 +46,6 @@ Network code should use HTTPS and make failure behavior visible.
 - Location tracking beyond the tutorial's explicit lookup flow
 - Model regeneration without response-shape notes
 - SwiftUI redesigns that obscure the tutorial purpose
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
