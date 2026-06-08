@@ -13,8 +13,8 @@ struct CategoryIconView: View {
     
     var body: some View {
         VStack(){
-            if categories.first != nil {
-                IconView(withURL: (categories.first!.icon?.iconPrefix)! + "64.png")
+            if let iconPrefix = categories.first?.icon?.iconPrefix {
+                IconView(withURL: iconPrefix + "64.png")
             }
         }
     }

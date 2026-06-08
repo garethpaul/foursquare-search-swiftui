@@ -16,7 +16,6 @@ class ImageLoader: ObservableObject {
     var data = Data() {
         didSet {
             didChange.send(data)
-            load(urlString: self.url)
         }
     }
 
@@ -26,9 +25,13 @@ class ImageLoader: ObservableObject {
     }
     
     private func load(urlString:String) {
-        guard let url = URL(string: urlString) else { return }
+        guard let url = URL(string: urlString), url.scheme == "https" else { return }
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
-            guard let data = data else { return }
+            guard error == nil,
+                let httpResponse = response as? HTTPURLResponse,
+                (200..<300).contains(httpResponse.statusCode),
+                let data = data else { return }
+
             DispatchQueue.main.async {
                 self.data = data
             }

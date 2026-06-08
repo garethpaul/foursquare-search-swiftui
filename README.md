@@ -12,9 +12,12 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 ## Repository Contents
 
 - `README.md` - project overview and local usage notes
+- `CHANGES.md` - concise history of maintenance changes
 - `FSQNearby` - source or example code
 - `FSQNearby.xcodeproj` - Xcode project file
+- `Makefile` - local verification entry point
 - `SECURITY.md` - security reporting and disclosure guidance
+- `scripts/check-baseline.sh` - static transport, configuration, and network checks
 - `VISION.md` - project direction and maintenance guardrails
 
 Additional scan context:
@@ -43,16 +46,29 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Open `FSQNearby.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
+- Configure `FOURSQUARE_VENUE_SEARCH_URL` as a local HTTPS build setting. Do
+  not commit URLs that contain credentials, private proxy hosts, or
+  user-specific location data.
 
 ## Testing and Verification
 
-- Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
+Run the static baseline:
+
+```bash
+make check
+```
+
+The baseline verifies that App Transport Security is not globally disabled,
+the venue-search URL is supplied through a local build setting, venue and image
+loads require HTTPS, and runtime diagnostics do not use `print`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
 ## Configuration and Secrets
 
-- No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
+- `FOURSQUARE_VENUE_SEARCH_URL` supplies the venue-search endpoint.
+- Keep API credentials, private endpoints, query URLs with location data,
+  `.xcconfig` files, and `.env` files out of source control.
 
 ## Security and Privacy Notes
 
@@ -65,6 +81,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
+- Run `make check` before pushing changes that touch network loading,
+  transport settings, venue decoding, or local configuration.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 

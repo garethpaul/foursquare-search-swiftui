@@ -22,9 +22,18 @@ Priority:
 - Avoid committing real API URLs, tokens, or user location data
 - Keep screenshot and README aligned with app behavior
 
+Current baseline:
+
+- `scripts/check-baseline.sh` and `make check` verify App Transport Security,
+  HTTPS-only venue and image loading, local endpoint configuration, and runtime
+  diagnostic guardrails.
+- `FoursquareVenueSearchURL` is wired to the local
+  `FOURSQUARE_VENUE_SEARCH_URL` build setting.
+- The global `NSAllowsArbitraryLoads` bypass has been removed.
+- Venue decoding avoids force-unwrapping missing response data.
+
 Next priorities:
 
-- Document how to configure the Foursquare venue-search URL securely
 - Add error and empty-state handling for network failures
 - Modernize SwiftUI and project settings in a dedicated pass
 - Add tests or manual verification notes for decoded venue responses

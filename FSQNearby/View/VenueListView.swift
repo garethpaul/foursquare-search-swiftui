@@ -12,10 +12,20 @@ struct VenueListView: View {
     @ObservedObject var fetcher = VenueFetcher()
     
     var body: some View {
-        List {
-            ForEach(fetcher.venues) { v in
-                VenueItemView(venue: v)
-                    .frame(height: 100, alignment: .leading)
+        Group {
+            if let message = fetcher.errorMessage {
+                Text(message)
+                    .foregroundColor(.secondary)
+            } else if fetcher.venues.isEmpty {
+                Text("No venues found.")
+                    .foregroundColor(.secondary)
+            } else {
+                List {
+                    ForEach(fetcher.venues) { v in
+                        VenueItemView(venue: v)
+                            .frame(height: 100, alignment: .leading)
+                    }
+                }
             }
         }
     }

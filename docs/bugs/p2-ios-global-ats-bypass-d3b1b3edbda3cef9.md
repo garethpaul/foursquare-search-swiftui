@@ -19,6 +19,12 @@ The app sets `NSAllowsArbitraryLoads` to true, disabling iOS App Transport Secur
 
 Remove the global `NSAllowsArbitraryLoads` setting, use HTTPS endpoints for network calls, and if an exception is unavoidable, scope it to the specific domain with `NSExceptionDomains` instead of disabling ATS app-wide.
 
+## Resolution
+
+Resolved on 2026-06-08 by removing the global ATS bypass, requiring the
+venue-search endpoint to come from the local `FOURSQUARE_VENUE_SEARCH_URL`
+build setting, and adding `make check` coverage for transport guardrails.
+
 ## Review metadata
 
 - Repository: `garethpaul/foursquare-search-swiftui`

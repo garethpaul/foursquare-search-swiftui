@@ -10,33 +10,66 @@ import Foundation
 
 public class VenueFetcher: ObservableObject {
     @Published var venues = [Venue]()
+    @Published var errorMessage: String?
     
     init() {
         load()
     }
     
     private func load() {
-        let url = URL(string: "FOURSQUARE_VENUE_SEARCH")!
-        
-            URLSession.shared.dataTask(with: url) {(data,response,error) in
-                do {
-                    if let d = data {
-                        let foursquareSearch = try JSONDecoder().decode(FoursquareSearch.self, from: d)
-                        DispatchQueue.main.async {
-                            let responseData = foursquareSearch.response
-                            self.venues = (responseData?.venues)!
-                            print(self.venues)
-                        }
-                    } else {
-                        print("No Data")
-                    }
-                } catch {
-                    print(error)
-                    print ("Error: " + error.localizedDescription)
-                }
-                    
+        guard let url = venueSearchURL() else {
+            setError("Venue search is not configured.")
+            return
+        }
 
-                
-            }.resume()
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            guard let self = self else { return }
+
+            if error != nil {
+                self.setError("Unable to load venues.")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse,
+                (200..<300).contains(httpResponse.statusCode),
+                let data = data else {
+                self.setError("Venue search returned no data.")
+                return
+            }
+
+            do {
+                let foursquareSearch = try JSONDecoder().decode(FoursquareSearch.self, from: data)
+                let venues = foursquareSearch.response?.venues ?? []
+                DispatchQueue.main.async {
+                    self.errorMessage = venues.isEmpty ? "No venues found." : nil
+                    self.venues = venues
+                }
+            } catch {
+                self.setError("Unable to decode venue search results.")
+            }
+        }.resume()
+    }
+
+    private func venueSearchURL() -> URL? {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "FoursquareVenueSearchURL") as? String else {
+            return nil
+        }
+
+        let trimmedValue = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedValue.isEmpty,
+            !trimmedValue.contains("$("),
+            let url = URL(string: trimmedValue),
+            url.scheme == "https" else {
+            return nil
+        }
+
+        return url
+    }
+
+    private func setError(_ message: String) {
+        DispatchQueue.main.async {
+            self.errorMessage = message
+            self.venues = []
+        }
     }
 }

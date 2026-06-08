@@ -12,14 +12,14 @@ struct AddressView: View {
     let location: Location
     var body: some View {
         VStack() {
-            if location.address != nil {
-                Text(location.address!)
+            if let address = location.address {
+                Text(address)
             }
-            if location.city != nil {
-                Text(location.city!)
+            if let city = location.city {
+                Text(city)
             }
-            if location.country != nil {
-                Text(location.country!)
+            if let country = location.country {
+                Text(country)
             }
         }.font(.system(size: 10))
          .frame(alignment: .leading)

@@ -13,12 +13,7 @@ struct CategoryView: View {
     
     var body: some View {
         VStack(){
-            if categories.first != nil{
-                Text(categories.first!.shortName)
-            } else {
-                Text("UnCategorized")
-            }
+            Text(categories.first?.shortName ?? "Uncategorized")
         }
     }
 }
-
