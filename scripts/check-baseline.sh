@@ -23,6 +23,10 @@ for path in \
   "FSQNearby/Info.plist" \
   "FSQNearby/Service/VenueFetcher.swift" \
   "FSQNearby/Service/ImageLoader.swift" \
+  "FSQNearby/View/AddressView.swift" \
+  "FSQNearby/View/CategoryIconView.swift" \
+  "FSQNearby/View/CategoryView.swift" \
+  "FSQNearby/View/VenueListView.swift" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
@@ -56,6 +60,7 @@ venue="$ROOT_DIR/FSQNearby/Service/VenueFetcher.swift"
 if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq 'object(forInfoDictionaryKey: "FoursquareVenueSearchURL")' "$venue" ||
   ! grep -Fq 'url.scheme == "https"' "$venue" ||
+  ! grep -Fq 'errorMessage' "$venue" ||
   grep -Fq 'URL(string: "FOURSQUARE_VENUE_SEARCH")!' "$venue" ||
   grep -Eq 'responseData\?\.(venues)\)!|URL\(string:.*\)!|print\(' "$venue"; then
   printf '%s\n' "VenueFetcher must use local HTTPS configuration without force unwraps or print diagnostics." >&2
@@ -66,6 +71,20 @@ image_loader="$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
 if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
   grep -Fq "load(urlString: self.url)" "$image_loader"; then
   printf '%s\n' "ImageLoader must require HTTPS and avoid recursive reloads when data changes." >&2
+  exit 1
+fi
+
+if ! grep -Fq "fetcher.errorMessage" "$ROOT_DIR/FSQNearby/View/VenueListView.swift" ||
+  ! grep -Fq "No venues found." "$ROOT_DIR/FSQNearby/View/VenueListView.swift"; then
+  printf '%s\n' "VenueListView must expose error and empty states." >&2
+  exit 1
+fi
+
+if grep -Eq 'first!|location\.(address|city|country)!|\(categories\.first!\.icon\?\.iconPrefix\)!' \
+  "$ROOT_DIR/FSQNearby/View/AddressView.swift" \
+  "$ROOT_DIR/FSQNearby/View/CategoryIconView.swift" \
+  "$ROOT_DIR/FSQNearby/View/CategoryView.swift"; then
+  printf '%s\n' "Venue view components must avoid force-unwrapping optional response fields." >&2
   exit 1
 fi
 

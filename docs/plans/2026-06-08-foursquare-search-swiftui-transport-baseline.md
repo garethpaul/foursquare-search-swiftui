@@ -16,6 +16,9 @@ hardcoded placeholder for the Foursquare venue-search URL.
   `FOURSQUARE_VENUE_SEARCH_URL` local build setting.
 - Required HTTPS for venue search and image loading.
 - Guarded venue decoding and removed force-unwrapping of missing response data.
+- Added visible empty/error states for venue loading.
+- Removed force-unwrapping of optional category and address fields.
+- Stopped image loading from recursively refetching after data changes.
 - Removed runtime `print` diagnostics from network loading.
 - Added basic empty/error venue states and safer optional rendering in SwiftUI
   views.
@@ -30,5 +33,4 @@ hardcoded placeholder for the Foursquare venue-search URL.
 ## Follow-Ups
 
 - Verify the app in Xcode with a local HTTPS Foursquare venue-search URL.
-- Add UI states for missing configuration, empty results, and network errors.
 - Add fixture-based decoding tests if model changes continue.
