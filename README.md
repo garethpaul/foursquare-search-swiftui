@@ -76,4 +76,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> List Nearby Venues with SwiftUI <!-- README-OVERVIEW-IMAGE --> This is a tutorial for using SwiftUI to display a list of venues.
+> List Nearby Venues with SwiftUI This is a tutorial for using SwiftUI to display a list of venues.
