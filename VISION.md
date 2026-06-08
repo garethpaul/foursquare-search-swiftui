@@ -1,5 +1,8 @@
 ## Foursquare Search SwiftUI Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 Foursquare Search SwiftUI is a SwiftUI tutorial app that lists nearby venues
 from a Foursquare search response.
 
