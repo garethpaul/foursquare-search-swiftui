@@ -60,7 +60,8 @@ make check
 
 The baseline verifies that App Transport Security is not globally disabled,
 the venue-search URL is supplied through a local build setting, venue and image
-loads require HTTPS, and runtime diagnostics do not use `print`.
+loads require HTTPS, optional venue fields are rendered safely, and runtime
+diagnostics do not use `print`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -77,6 +78,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Review changes touching mobile permissions or privacy-sensitive device data; examples from the scan include FSQNearby/Models/FoursquareSearch.swift, FSQNearby/View/AddressView.swift, FSQNearby/View/VenueItemView.swift.
 - Review changes touching file, media, JSON, XML, CSV, OCR, or data parsing; examples from the scan include FSQNearby/Info.plist, FSQNearby/Models/FoursquareSearch.swift, FSQNearby/View/IconView.swift, FSQNearby.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist.
 - Review changes touching shell execution, subprocess, or dynamic evaluation; examples from the scan include FSQNearby/View/AddressView.swift.
+- Missing configuration, empty responses, and network failures should render a
+  visible state instead of crashing or leaving a blank list.
 
 ## Maintenance Notes
 

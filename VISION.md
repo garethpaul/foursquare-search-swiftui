@@ -31,10 +31,11 @@ Current baseline:
   `FOURSQUARE_VENUE_SEARCH_URL` build setting.
 - The global `NSAllowsArbitraryLoads` bypass has been removed.
 - Venue decoding avoids force-unwrapping missing response data.
+- Venue list loading now has visible empty/error states and optional-safe
+  category/address rendering.
 
 Next priorities:
 
-- Add error and empty-state handling for network failures
 - Modernize SwiftUI and project settings in a dedicated pass
 - Add tests or manual verification notes for decoded venue responses
 
