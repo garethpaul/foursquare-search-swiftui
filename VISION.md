@@ -40,7 +40,7 @@ private endpoints, or user-specific location data.
 
 Network code should use HTTPS and make failure behavior visible.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Hardcoded real Foursquare credentials or private proxy URLs
 - Location tracking beyond the tutorial's explicit lookup flow
