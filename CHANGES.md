@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Aligned image URLSession callbacks with the loader lifecycle by capturing the
+  loader weakly before publishing downloaded image data.
+
 ## 2026-06-08
 
 - Retained and cancelled venue search URLSession tasks when fetchers are

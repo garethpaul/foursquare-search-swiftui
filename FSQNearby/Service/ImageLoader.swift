@@ -33,7 +33,8 @@ class ImageLoader: ObservableObject {
         guard let url = URL(string: urlString),
             url.scheme == "https",
             url.host?.isEmpty == false else { return }
-        task = URLSession.shared.dataTask(with: url) { data, response, error in
+        task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            guard let self = self else { return }
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode),
