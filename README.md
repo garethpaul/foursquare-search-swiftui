@@ -61,7 +61,8 @@ make check
 The baseline verifies that App Transport Security is not globally disabled,
 the venue-search URL is supplied through a local build setting, venue and image
 loads require HTTPS URLs with hosts, optional venue fields are rendered safely,
-and runtime diagnostics do not use `print`.
+image requests are cancelled when loaders are deallocated, and runtime
+diagnostics do not use `print`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -90,6 +91,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md` for
   network URL host validation guardrails.
+- See `docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md` for
+  image request lifecycle guardrails.
 
 ## Contributing
 

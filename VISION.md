@@ -33,11 +33,13 @@ Current baseline:
 - Venue decoding avoids force-unwrapping missing response data.
 - Venue list loading now has visible empty/error states and optional-safe
   category/address rendering.
+- Image loading retains and cancels URLSession tasks when loaders are released.
 
 Next priorities:
 
 - Modernize SwiftUI and project settings in a dedicated pass
 - Add tests or manual verification notes for decoded venue responses
+- Keep image request lifecycle behavior visible as the view layer evolves
 
 Contribution rules:
 

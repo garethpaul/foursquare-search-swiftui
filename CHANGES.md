@@ -9,5 +9,7 @@
 - Added empty/error venue states and safer optional rendering in SwiftUI views.
 - Stopped image loading from recursively refetching after data changes.
 - Required venue and image request URLs to include an HTTPS host.
+- Retained image URLSession tasks and cancelled them when image loaders are
+  deallocated.
 - Added `make check` and `scripts/check-baseline.sh` for static transport and
   configuration verification.

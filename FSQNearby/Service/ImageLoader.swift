@@ -11,6 +11,7 @@ import Foundation
 
 class ImageLoader: ObservableObject {
     private var url: String = ""
+    private var task: URLSessionDataTask?
     var didChange = PassthroughSubject<Data, Never>()
     
     var data = Data() {
@@ -23,12 +24,16 @@ class ImageLoader: ObservableObject {
         self.url = urlString
         load(urlString: url)
     }
+
+    deinit {
+        task?.cancel()
+    }
     
     private func load(urlString:String) {
         guard let url = URL(string: urlString),
             url.scheme == "https",
             url.host?.isEmpty == false else { return }
-        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+        task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode),
@@ -38,6 +43,6 @@ class ImageLoader: ObservableObject {
                 self.data = data
             }
         }
-        task.resume()
+        task?.resume()
     }
 }
