@@ -41,7 +41,8 @@ class ImageLoader: ObservableObject {
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode),
-                let data = data else { return }
+                let data = data,
+                !data.isEmpty else { return }
 
             DispatchQueue.main.async {
                 self.data = data
