@@ -40,6 +40,8 @@ If this project requests device permissions such as location, camera, microphone
 Image URL userinfo and fragments should be rejected before requests start.
 Empty image response bodies should be ignored before publishing image data to
 views.
+Undecodable image payloads should be ignored before replacing SwiftUI icon
+state.
 
 ## Dependency and Supply Chain Security
 

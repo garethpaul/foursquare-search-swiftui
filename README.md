@@ -73,7 +73,8 @@ embedded userinfo and fragments before starting a request. Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing
-data.
+data. SwiftUI icon rendering ignores undecodable image payloads instead of
+replacing the current icon with a blank image.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -98,6 +99,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   downloaded data.
 - Image URL userinfo and fragments should be rejected before starting requests.
 - Empty image response bodies should not be published to SwiftUI views.
+- Undecodable image payloads should not replace the current SwiftUI icon with a
+  blank image.
 
 ## Maintenance Notes
 
@@ -121,6 +124,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   URL userinfo and fragment guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md` for empty
   image response guardrails.
+- See `docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md` for
+  undecodable image payload guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
   verification target guardrails.
 

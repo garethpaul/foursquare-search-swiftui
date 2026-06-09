@@ -11,6 +11,7 @@ VENUE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-u
 MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md"
 IMAGE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md"
 IMAGE_EMPTY_DATA_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md"
+IMAGE_DECODE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md"
 
 require_file() {
   path=$1
@@ -34,10 +35,12 @@ for path in \
   "FSQNearby/View/AddressView.swift" \
   "FSQNearby/View/CategoryIconView.swift" \
   "FSQNearby/View/CategoryView.swift" \
+  "FSQNearby/View/IconView.swift" \
   "FSQNearby/View/VenueListView.swift" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md" \
+  "docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -122,6 +125,13 @@ if ! grep -Fq "fetcher.errorMessage" "$ROOT_DIR/FSQNearby/View/VenueListView.swi
   exit 1
 fi
 
+icon_view="$ROOT_DIR/FSQNearby/View/IconView.swift"
+if ! grep -Fq "if let image = UIImage(data: data)" "$icon_view" ||
+  grep -Fq "UIImage(data: data) ?? UIImage()" "$icon_view"; then
+  printf '%s\n' "IconView must ignore undecodable image data instead of replacing the current image with a blank one." >&2
+  exit 1
+fi
+
 if grep -Eq 'first!|location\.(address|city|country)!|\(categories\.first!\.icon\?\.iconPrefix\)!' \
   "$ROOT_DIR/FSQNearby/View/AddressView.swift" \
   "$ROOT_DIR/FSQNearby/View/CategoryIconView.swift" \
@@ -144,6 +154,7 @@ if ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/README.md" ||
   ! grep -Fq "image requests are cancelled" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Image URL userinfo and fragments" "$ROOT_DIR/README.md" ||
   ! grep -Fq "empty image response bodies" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "undecodable image payloads" "$ROOT_DIR/README.md" ||
   ! grep -Fq "weak task captures" "$ROOT_DIR/README.md" ||
   ! grep -Fq "App Transport Security" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document local endpoint configuration and verification." >&2
@@ -159,6 +170,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Image URL parsing rejects embedded userinfo and fragments" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Image loading retains and cancels URLSession tasks" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Empty image response bodies are ignored" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Undecodable image payloads are ignored" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "weak task captures" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe the current transport baseline." >&2
@@ -167,6 +179,11 @@ fi
 
 if ! grep -Fq "Resolved on 2026-06-08" "$ROOT_DIR/docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md"; then
   printf '%s\n' "ATS bug record must include the local resolution." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Undecodable image payloads should be ignored" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the undecodable image payload boundary." >&2
   exit 1
 fi
 
@@ -227,8 +244,18 @@ if ! grep -Fq "status: completed" "$IMAGE_EMPTY_DATA_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$IMAGE_DECODE_PLAN"; then
+  printf '%s\n' "Image decode guard plan must be marked completed." >&2
+  exit 1
+fi
+
 if ! grep -Fq "make check" "$IMAGE_EMPTY_DATA_PLAN"; then
   printf '%s\n' "Image empty data plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "make check" "$IMAGE_DECODE_PLAN"; then
+  printf '%s\n' "Image decode guard plan must record make check verification." >&2
   exit 1
 fi
 

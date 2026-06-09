@@ -2,6 +2,7 @@
 
 ## 2026-06-09
 
+- Ignored undecodable image payloads before replacing SwiftUI icon state.
 - Ignored empty image response bodies before publishing SwiftUI image data.
 - Rejected image URL userinfo and fragments before starting image requests.
 - Added `make lint`, `make test`, and `make build` aliases so local verification
