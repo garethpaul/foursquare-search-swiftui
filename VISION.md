@@ -24,9 +24,9 @@ Priority:
 
 Current baseline:
 
-- `scripts/check-baseline.sh` and `make check` verify App Transport Security,
-  HTTPS-only venue and image loading with URL hosts, local endpoint
-  configuration, and runtime diagnostic guardrails.
+- `scripts/check-baseline.sh`, `make lint`, `make test`, `make build`, and
+  `make check` verify App Transport Security, HTTPS-only venue and image loading with URL hosts,
+  local endpoint configuration, and runtime diagnostic guardrails.
 - `FoursquareVenueSearchURL` is wired to the local
   `FOURSQUARE_VENUE_SEARCH_URL` build setting.
 - Venue endpoint parsing rejects embedded userinfo and fragments while keeping
@@ -39,6 +39,8 @@ Current baseline:
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
   released.
+- The local Makefile exposes lint, test, build, and check targets for a stable
+  pre-push gate.
 
 Next priorities:
 
@@ -48,6 +50,8 @@ Next priorities:
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves
 - Keep venue endpoint URL-part validation visible as configuration evolves
+- Keep local verification targets available even while full Xcode testing needs
+  a macOS toolchain
 
 Contribution rules:
 

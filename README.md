@@ -55,17 +55,23 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 Run the static baseline:
 
 ```bash
+make lint
+make test
+make build
 make check
 ```
 
-The baseline verifies that App Transport Security is not globally disabled,
-the venue-search URL is supplied through a local build setting, venue and image
-loads require HTTPS URLs with hosts, optional venue fields are rendered safely,
-image requests are cancelled when loaders are deallocated, and runtime
-diagnostics do not use `print`. Venue search requests are also retained and
-cancelled when fetchers are deallocated. Venue endpoint parsing rejects embedded
-userinfo and fragments before starting a request. Image request callbacks use
-weak task captures so retained tasks do not keep released loaders alive.
+The `lint`, `test`, and `build` targets currently delegate to the static
+baseline so the repository has a consistent local gate even when Xcode is not
+installed. The baseline verifies that App Transport Security is not globally
+disabled, the venue-search URL is supplied through a local build setting, venue
+and image loads require HTTPS URLs with hosts, optional venue fields are
+rendered safely, image requests are cancelled when loaders are deallocated, and
+runtime diagnostics do not use `print`. Venue search requests are also retained
+and cancelled when fetchers are deallocated. Venue endpoint parsing rejects
+embedded userinfo and fragments before starting a request. Image request
+callbacks use weak task captures so retained tasks do not keep released loaders
+alive.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -92,8 +98,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
-- Run `make check` before pushing changes that touch network loading,
-  transport settings, venue decoding, or local configuration.
+- Run `make lint`, `make test`, `make build`, and `make check` before pushing
+  changes that touch network loading, transport settings, venue decoding, or
+  local configuration.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md` for
@@ -106,6 +113,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   image request callback capture guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md` for venue
   endpoint userinfo and fragment guardrails.
+- See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
+  verification target guardrails.
 
 ## Contributing
 

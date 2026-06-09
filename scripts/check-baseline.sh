@@ -8,6 +8,7 @@ IMAGE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-task-l
 VENUE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md"
 IMAGE_CAPTURE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md"
 VENUE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md"
+MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md"
 
 require_file() {
   path=$1
@@ -35,12 +36,20 @@ for path in \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
+  "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
 done
+
+makefile="$ROOT_DIR/Makefile"
+if ! grep -Eq '^\.PHONY: .*build.*check.*lint.*test|^\.PHONY: .*build.*lint.*test.*check' "$makefile" ||
+  ! grep -Fq "lint test build: check" "$makefile"; then
+  printf '%s\n' "Makefile must expose lint, test, build, and check gate targets." >&2
+  exit 1
+fi
 
 if command -v python3 >/dev/null 2>&1; then
   python3 - "$ROOT_DIR/FSQNearby/Info.plist" <<'PY'
@@ -119,6 +128,9 @@ if grep -R -n 'print(' "$ROOT_DIR/FSQNearby"; then
 fi
 
 if ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "make lint" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "make test" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "make build" "$ROOT_DIR/README.md" ||
   ! grep -Fq "make check" "$ROOT_DIR/README.md" ||
   ! grep -Fq "HTTPS URL with a host" "$ROOT_DIR/README.md" ||
   ! grep -Fq "image requests are cancelled" "$ROOT_DIR/README.md" ||
@@ -129,6 +141,9 @@ if ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/README.md" ||
 fi
 
 if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "make lint" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "make test" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "make build" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "NSAllowsArbitraryLoads" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "HTTPS-only venue and image loading with URL hosts" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Image loading retains and cancels URLSession tasks" "$ROOT_DIR/VISION.md" ||
@@ -182,6 +197,11 @@ fi
 
 if ! grep -Fq "status: completed" "$VENUE_URL_PARTS_PLAN"; then
   printf '%s\n' "Venue URL parts plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$MAKE_GATES_PLAN"; then
+  printf '%s\n' "Make gate alias plan must be marked completed." >&2
   exit 1
 fi
 

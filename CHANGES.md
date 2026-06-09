@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added `make lint`, `make test`, and `make build` aliases so local verification
+  has the expected pre-push gate targets in addition to `make check`.
 - Aligned image URLSession callbacks with the loader lifecycle by capturing the
   loader weakly before publishing downloaded image data.
 - Rejected venue-search endpoint userinfo and fragments before starting
