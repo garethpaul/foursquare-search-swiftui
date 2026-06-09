@@ -4,6 +4,8 @@
 
 - Aligned image URLSession callbacks with the loader lifecycle by capturing the
   loader weakly before publishing downloaded image data.
+- Rejected venue-search endpoint userinfo and fragments before starting
+  requests.
 
 ## 2026-06-08
 

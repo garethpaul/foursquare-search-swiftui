@@ -7,6 +7,7 @@ HOST_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-url-host-validatio
 IMAGE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md"
 VENUE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md"
 IMAGE_CAPTURE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md"
+VENUE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md"
 
 require_file() {
   path=$1
@@ -33,6 +34,7 @@ for path in \
   "FSQNearby/View/VenueListView.swift" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
+  "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
@@ -69,6 +71,9 @@ if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq 'object(forInfoDictionaryKey: "FoursquareVenueSearchURL")' "$venue" ||
   ! grep -Fq 'url.scheme == "https"' "$venue" ||
   ! grep -Fq 'url.host?.isEmpty == false' "$venue" ||
+  ! grep -Fq "url.user == nil" "$venue" ||
+  ! grep -Fq "url.password == nil" "$venue" ||
+  ! grep -Fq "url.fragment == nil" "$venue" ||
   ! grep -Fq 'errorMessage' "$venue" ||
   ! grep -Fq "private var task: URLSessionDataTask?" "$venue" ||
   ! grep -Fq "deinit" "$venue" ||
@@ -172,6 +177,11 @@ fi
 
 if ! grep -Fq "status: completed" "$IMAGE_CAPTURE_PLAN"; then
   printf '%s\n' "Image weak capture plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$VENUE_URL_PARTS_PLAN"; then
+  printf '%s\n' "Venue URL parts plan must be marked completed." >&2
   exit 1
 fi
 
