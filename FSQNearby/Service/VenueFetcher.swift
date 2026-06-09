@@ -11,9 +11,14 @@ import Foundation
 public class VenueFetcher: ObservableObject {
     @Published var venues = [Venue]()
     @Published var errorMessage: String?
+    private var task: URLSessionDataTask?
     
     init() {
         load()
+    }
+
+    deinit {
+        task?.cancel()
     }
     
     private func load() {
@@ -22,7 +27,7 @@ public class VenueFetcher: ObservableObject {
             return
         }
 
-        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+        task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             guard let self = self else { return }
 
             if error != nil {
@@ -47,7 +52,8 @@ public class VenueFetcher: ObservableObject {
             } catch {
                 self.setError("Unable to decode venue search results.")
             }
-        }.resume()
+        }
+        task?.resume()
     }
 
     private func venueSearchURL() -> URL? {

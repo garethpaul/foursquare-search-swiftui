@@ -62,7 +62,8 @@ The baseline verifies that App Transport Security is not globally disabled,
 the venue-search URL is supplied through a local build setting, venue and image
 loads require HTTPS URLs with hosts, optional venue fields are rendered safely,
 image requests are cancelled when loaders are deallocated, and runtime
-diagnostics do not use `print`.
+diagnostics do not use `print`. Venue search requests are also retained and
+cancelled when fetchers are deallocated.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -81,6 +82,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Review changes touching shell execution, subprocess, or dynamic evaluation; examples from the scan include FSQNearby/View/AddressView.swift.
 - Missing configuration, empty responses, and network failures should render a
   visible state instead of crashing or leaving a blank list.
+- Venue and image URLSession tasks should stay tied to their observable object
+  lifecycles.
 
 ## Maintenance Notes
 
@@ -93,6 +96,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   network URL host validation guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md` for
   image request lifecycle guardrails.
+- See `docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md` for
+  venue request lifecycle guardrails.
 
 ## Contributing
 

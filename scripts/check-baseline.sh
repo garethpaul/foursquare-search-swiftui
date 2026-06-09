@@ -5,6 +5,7 @@ ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"
 HOST_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md"
 IMAGE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md"
+VENUE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md"
 
 require_file() {
   path=$1
@@ -30,6 +31,7 @@ for path in \
   "FSQNearby/View/CategoryView.swift" \
   "FSQNearby/View/VenueListView.swift" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
+  "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
@@ -66,9 +68,13 @@ if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq 'url.scheme == "https"' "$venue" ||
   ! grep -Fq 'url.host?.isEmpty == false' "$venue" ||
   ! grep -Fq 'errorMessage' "$venue" ||
+  ! grep -Fq "private var task: URLSessionDataTask?" "$venue" ||
+  ! grep -Fq "deinit" "$venue" ||
+  ! grep -Fq "task?.cancel()" "$venue" ||
+  ! grep -Fq "task?.resume()" "$venue" ||
   grep -Fq 'URL(string: "FOURSQUARE_VENUE_SEARCH")!' "$venue" ||
   grep -Eq 'responseData\?\.(venues)\)!|URL\(string:.*\)!|print\(' "$venue"; then
-  printf '%s\n' "VenueFetcher must use local HTTPS host configuration without force unwraps or print diagnostics." >&2
+  printf '%s\n' "VenueFetcher must use local HTTPS host configuration, retain request tasks, and avoid force unwraps or print diagnostics." >&2
   exit 1
 fi
 
@@ -150,6 +156,11 @@ fi
 
 if ! grep -Fq "status: completed" "$IMAGE_TASK_PLAN"; then
   printf '%s\n' "Image task lifecycle plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$VENUE_TASK_PLAN"; then
+  printf '%s\n' "Venue task lifecycle plan must be marked completed." >&2
   exit 1
 fi
 

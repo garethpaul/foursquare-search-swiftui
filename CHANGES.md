@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Retained and cancelled venue search URLSession tasks when fetchers are
+  deallocated.
 - Removed the global App Transport Security arbitrary-loads bypass.
 - Moved the Foursquare venue-search endpoint to a local build setting.
 - Required HTTPS for venue and image loading.
