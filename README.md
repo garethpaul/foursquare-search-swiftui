@@ -46,7 +46,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Open `FSQNearby.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
-- Configure `FOURSQUARE_VENUE_SEARCH_URL` as a local HTTPS build setting. Do
+- Configure `FOURSQUARE_VENUE_SEARCH_URL` as a local HTTPS URL with a host. Do
   not commit URLs that contain credentials, private proxy hosts, or
   user-specific location data.
 
@@ -60,8 +60,8 @@ make check
 
 The baseline verifies that App Transport Security is not globally disabled,
 the venue-search URL is supplied through a local build setting, venue and image
-loads require HTTPS, optional venue fields are rendered safely, and runtime
-diagnostics do not use `print`.
+loads require HTTPS URLs with hosts, optional venue fields are rendered safely,
+and runtime diagnostics do not use `print`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -88,6 +88,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   transport settings, venue decoding, or local configuration.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
+- See `docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md` for
+  network URL host validation guardrails.
 
 ## Contributing
 

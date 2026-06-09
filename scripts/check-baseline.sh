@@ -3,6 +3,7 @@ set -eu
 
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 PLAN="$ROOT_DIR/docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"
+HOST_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md"
 
 require_file() {
   path=$1
@@ -28,6 +29,7 @@ for path in \
   "FSQNearby/View/CategoryView.swift" \
   "FSQNearby/View/VenueListView.swift" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
+  "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
 done
@@ -60,17 +62,19 @@ venue="$ROOT_DIR/FSQNearby/Service/VenueFetcher.swift"
 if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq 'object(forInfoDictionaryKey: "FoursquareVenueSearchURL")' "$venue" ||
   ! grep -Fq 'url.scheme == "https"' "$venue" ||
+  ! grep -Fq 'url.host?.isEmpty == false' "$venue" ||
   ! grep -Fq 'errorMessage' "$venue" ||
   grep -Fq 'URL(string: "FOURSQUARE_VENUE_SEARCH")!' "$venue" ||
   grep -Eq 'responseData\?\.(venues)\)!|URL\(string:.*\)!|print\(' "$venue"; then
-  printf '%s\n' "VenueFetcher must use local HTTPS configuration without force unwraps or print diagnostics." >&2
+  printf '%s\n' "VenueFetcher must use local HTTPS host configuration without force unwraps or print diagnostics." >&2
   exit 1
 fi
 
 image_loader="$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
 if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
+  ! grep -Fq 'url.host?.isEmpty == false' "$image_loader" ||
   grep -Fq "load(urlString: self.url)" "$image_loader"; then
-  printf '%s\n' "ImageLoader must require HTTPS and avoid recursive reloads when data changes." >&2
+  printf '%s\n' "ImageLoader must require HTTPS URLs with hosts and avoid recursive reloads when data changes." >&2
   exit 1
 fi
 
@@ -95,6 +99,7 @@ fi
 
 if ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/README.md" ||
   ! grep -Fq "make check" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "HTTPS URL with a host" "$ROOT_DIR/README.md" ||
   ! grep -Fq "App Transport Security" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document local endpoint configuration and verification." >&2
   exit 1
@@ -102,6 +107,7 @@ fi
 
 if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "NSAllowsArbitraryLoads" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "HTTPS-only venue and image loading with URL hosts" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe the current transport baseline." >&2
   exit 1
@@ -126,6 +132,11 @@ fi
 
 if ! grep -Fq "status: completed" "$PLAN"; then
   printf '%s\n' "Plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$HOST_PLAN"; then
+  printf '%s\n' "URL host validation plan must be marked completed." >&2
   exit 1
 fi
 

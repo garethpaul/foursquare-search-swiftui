@@ -25,8 +25,8 @@ Priority:
 Current baseline:
 
 - `scripts/check-baseline.sh` and `make check` verify App Transport Security,
-  HTTPS-only venue and image loading, local endpoint configuration, and runtime
-  diagnostic guardrails.
+  HTTPS-only venue and image loading with URL hosts, local endpoint
+  configuration, and runtime diagnostic guardrails.
 - `FoursquareVenueSearchURL` is wired to the local
   `FOURSQUARE_VENUE_SEARCH_URL` build setting.
 - The global `NSAllowsArbitraryLoads` bypass has been removed.
@@ -55,7 +55,7 @@ Canonical security policy and reporting:
 Venue search can expose location intent. Do not commit real API credentials,
 private endpoints, or user-specific location data.
 
-Network code should use HTTPS and make failure behavior visible.
+Network code should use HTTPS URLs with hosts and make failure behavior visible.
 
 ## What We Will Not Merge (For Now)
 

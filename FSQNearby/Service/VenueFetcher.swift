@@ -59,7 +59,8 @@ public class VenueFetcher: ObservableObject {
         guard !trimmedValue.isEmpty,
             !trimmedValue.contains("$("),
             let url = URL(string: trimmedValue),
-            url.scheme == "https" else {
+            url.scheme == "https",
+            url.host?.isEmpty == false else {
             return nil
         }
 

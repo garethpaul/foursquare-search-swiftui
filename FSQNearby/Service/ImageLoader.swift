@@ -25,7 +25,9 @@ class ImageLoader: ObservableObject {
     }
     
     private func load(urlString:String) {
-        guard let url = URL(string: urlString), url.scheme == "https" else { return }
+        guard let url = URL(string: urlString),
+            url.scheme == "https",
+            url.host?.isEmpty == false else { return }
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
