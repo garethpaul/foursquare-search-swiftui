@@ -9,6 +9,7 @@ VENUE_TASK_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-task-l
 IMAGE_CAPTURE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md"
 VENUE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md"
 MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md"
+IMAGE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md"
 
 require_file() {
   path=$1
@@ -35,6 +36,7 @@ for path in \
   "FSQNearby/View/VenueListView.swift" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
+  "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md" \
@@ -97,6 +99,9 @@ fi
 image_loader="$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
 if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
   ! grep -Fq 'url.host?.isEmpty == false' "$image_loader" ||
+  ! grep -Fq "url.user == nil" "$image_loader" ||
+  ! grep -Fq "url.password == nil" "$image_loader" ||
+  ! grep -Fq "url.fragment == nil" "$image_loader" ||
   ! grep -Fq "private var task: URLSessionDataTask?" "$image_loader" ||
   ! grep -Fq "deinit" "$image_loader" ||
   ! grep -Fq "task?.cancel()" "$image_loader" ||
@@ -104,7 +109,7 @@ if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
   ! grep -Fq "guard let self = self else { return }" "$image_loader" ||
   grep -Fq "let task = URLSession.shared.dataTask" "$image_loader" ||
   grep -Fq "load(urlString: self.url)" "$image_loader"; then
-  printf '%s\n' "ImageLoader must require HTTPS URLs with hosts, cancel retained tasks, avoid strong task captures, and avoid recursive reloads when data changes." >&2
+  printf '%s\n' "ImageLoader must require HTTPS URLs with hosts, reject unsafe URL parts, cancel retained tasks, avoid strong task captures, and avoid recursive reloads when data changes." >&2
   exit 1
 fi
 
@@ -134,6 +139,7 @@ if ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/README.md" ||
   ! grep -Fq "make check" "$ROOT_DIR/README.md" ||
   ! grep -Fq "HTTPS URL with a host" "$ROOT_DIR/README.md" ||
   ! grep -Fq "image requests are cancelled" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Image URL userinfo and fragments" "$ROOT_DIR/README.md" ||
   ! grep -Fq "weak task captures" "$ROOT_DIR/README.md" ||
   ! grep -Fq "App Transport Security" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document local endpoint configuration and verification." >&2
@@ -146,6 +152,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "make build" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "NSAllowsArbitraryLoads" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "HTTPS-only venue and image loading with URL hosts" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Image URL parsing rejects embedded userinfo and fragments" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Image loading retains and cancels URLSession tasks" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "weak task captures" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/VISION.md"; then
@@ -202,6 +209,11 @@ fi
 
 if ! grep -Fq "status: completed" "$MAKE_GATES_PLAN"; then
   printf '%s\n' "Make gate alias plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$IMAGE_URL_PARTS_PLAN"; then
+  printf '%s\n' "Image URL parts plan must be marked completed." >&2
   exit 1
 fi
 

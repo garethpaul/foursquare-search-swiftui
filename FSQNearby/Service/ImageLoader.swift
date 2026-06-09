@@ -32,7 +32,10 @@ class ImageLoader: ObservableObject {
     private func load(urlString:String) {
         guard let url = URL(string: urlString),
             url.scheme == "https",
-            url.host?.isEmpty == false else { return }
+            url.host?.isEmpty == false,
+            url.user == nil,
+            url.password == nil,
+            url.fragment == nil else { return }
         task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
             guard let self = self else { return }
             guard error == nil,

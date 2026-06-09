@@ -31,6 +31,8 @@ Current baseline:
   `FOURSQUARE_VENUE_SEARCH_URL` build setting.
 - Venue endpoint parsing rejects embedded userinfo and fragments while keeping
   HTTPS host validation.
+- Image URL parsing rejects embedded userinfo and fragments while keeping HTTPS
+  host validation.
 - The global `NSAllowsArbitraryLoads` bypass has been removed.
 - Venue decoding avoids force-unwrapping missing response data.
 - Venue list loading now has visible empty/error states and optional-safe
@@ -50,6 +52,7 @@ Next priorities:
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves
 - Keep venue endpoint URL-part validation visible as configuration evolves
+- Keep image URL-part validation visible as remote image handling evolves
 - Keep local verification targets available even while full Xcode testing needs
   a macOS toolchain
 

@@ -71,7 +71,8 @@ runtime diagnostics do not use `print`. Venue search requests are also retained
 and cancelled when fetchers are deallocated. Venue endpoint parsing rejects
 embedded userinfo and fragments before starting a request. Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
-alive.
+alive. Image URL userinfo and fragments are rejected before image requests
+start.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -94,6 +95,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   lifecycles.
 - Image URLSession callbacks should use weak task captures before publishing
   downloaded data.
+- Image URL userinfo and fragments should be rejected before starting requests.
 
 ## Maintenance Notes
 
@@ -113,6 +115,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   image request callback capture guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md` for venue
   endpoint userinfo and fragment guardrails.
+- See `docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md` for image
+  URL userinfo and fragment guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
   verification target guardrails.
 
