@@ -45,6 +45,8 @@ Current baseline:
   released.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
+- GitHub Actions runs `make check` on macOS, including the credential-free
+  Xcode project parse.
 
 Next priorities:
 
@@ -66,6 +68,8 @@ Contribution rules:
 - Keep generated API models reviewable when response shapes change.
 - Verify the venue list on simulator or device for UI changes.
 - Keep credentials and private endpoints out of git.
+- Keep `.github/workflows/check.yml` aligned with the static transport and
+  Xcode project parsing baseline.
 
 ## Security And Privacy
 

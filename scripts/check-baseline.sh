@@ -12,6 +12,8 @@ MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-make-gate-al
 IMAGE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md"
 IMAGE_EMPTY_DATA_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md"
 IMAGE_DECODE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md"
+CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
+CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 
 require_file() {
   path=$1
@@ -47,6 +49,8 @@ for path in \
   "docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
+  "docs/plans/2026-06-10-ci-baseline.md" \
+  ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
 done
@@ -156,6 +160,7 @@ if ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/README.md" ||
   ! grep -Fq "empty image response bodies" "$ROOT_DIR/README.md" ||
   ! grep -Fq "undecodable image payloads" "$ROOT_DIR/README.md" ||
   ! grep -Fq "weak task captures" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "GitHub Actions" "$ROOT_DIR/README.md" ||
   ! grep -Fq "App Transport Security" "$ROOT_DIR/README.md"; then
   printf '%s\n' "README must document local endpoint configuration and verification." >&2
   exit 1
@@ -172,6 +177,7 @@ if ! grep -Fq "scripts/check-baseline.sh" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Empty image response bodies are ignored" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "Undecodable image payloads are ignored" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "weak task captures" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "GitHub Actions" "$ROOT_DIR/VISION.md" ||
   ! grep -Fq "FOURSQUARE_VENUE_SEARCH_URL" "$ROOT_DIR/VISION.md"; then
   printf '%s\n' "VISION must describe the current transport baseline." >&2
   exit 1
@@ -184,6 +190,11 @@ fi
 
 if ! grep -Fq "Undecodable image payloads should be ignored" "$ROOT_DIR/SECURITY.md"; then
   printf '%s\n' "SECURITY must document the undecodable image payload boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "GitHub Actions" "$ROOT_DIR/SECURITY.md"; then
+  printf '%s\n' "SECURITY must document the GitHub Actions baseline." >&2
   exit 1
 fi
 
@@ -256,6 +267,22 @@ fi
 
 if ! grep -Fq "make check" "$IMAGE_DECODE_PLAN"; then
   printf '%s\n' "Image decode guard plan must record make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "contents: read" "$CI_WORKFLOW" || \
+   ! grep -Fq "cancel-in-progress: true" "$CI_WORKFLOW" || \
+   ! grep -Fq "runs-on: macos-15" "$CI_WORKFLOW" || \
+   ! grep -Fq "timeout-minutes: 10" "$CI_WORKFLOW" || \
+   ! grep -Fq "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" "$CI_WORKFLOW" || \
+   ! grep -Fq "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" "$CI_WORKFLOW" || \
+   ! grep -Fq "run: make check" "$CI_WORKFLOW"; then
+  printf '%s\n' "GitHub Actions must keep the bounded, least-privilege macOS check contract." >&2
+  exit 1
+fi
+
+if ! grep -Fq "Status: Completed" "$CI_PLAN" || ! grep -Fq "make check" "$CI_PLAN"; then
+  printf '%s\n' "Foursquare Search SwiftUI CI baseline plan must record completed status and make check verification." >&2
   exit 1
 fi
 

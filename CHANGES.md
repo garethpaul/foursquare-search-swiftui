@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-10
+
+- Added a pinned, least-privilege macOS GitHub Actions workflow that runs the
+  static baseline and parses the Xcode project before review.
+- Added a static guard requiring the CI workflow and completed CI baseline plan
+  to remain checked in.
+
 ## 2026-06-09
 
 - Ignored undecodable image payloads before replacing SwiftUI icon state.
