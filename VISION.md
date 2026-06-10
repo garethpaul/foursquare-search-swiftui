@@ -39,6 +39,8 @@ Current baseline:
   category/address rendering.
 - Image loading retains and cancels URLSession tasks when loaders are released.
 - Empty image response bodies are ignored before image data is published.
+- Remote image payloads use temporary-file downloads and are bounded to 5 MiB
+  by response metadata and actual file size before entering app memory.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are

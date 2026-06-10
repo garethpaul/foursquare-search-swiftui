@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Bounded accepted remote image payloads to 5 MiB using response length
+  metadata and actual downloaded byte count.
 - Added a pinned, least-privilege macOS GitHub Actions workflow that runs the
   static baseline and parses the Xcode project before review.
 - Added a static guard requiring the CI workflow and completed CI baseline plan

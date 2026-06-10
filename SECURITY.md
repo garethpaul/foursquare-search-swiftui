@@ -42,6 +42,9 @@ If this project requests device permissions such as location, camera, microphone
 Image URL userinfo and fragments should be rejected before requests start.
 Empty image response bodies should be ignored before publishing image data to
 views.
+Remote image responses should use temporary-file downloads and be rejected
+above 5 MiB using both response length metadata and actual file size before
+loading them into app memory.
 Undecodable image payloads should be ignored before replacing SwiftUI icon
 state.
 
