@@ -61,8 +61,9 @@ make build
 make check
 ```
 
-GitHub Actions runs `make check` on macOS for pushes, pull requests, and manual
-dispatches, including Xcode project parsing without live credentials.
+GitHub Actions runs `make check` through `.github/workflows/check.yml` on
+macOS for pushes, pull requests, and manual dispatches, including Xcode project
+parsing without live credentials.
 
 The `lint`, `test`, and `build` targets currently delegate to the static
 baseline so the repository has a consistent local gate even when Xcode is not

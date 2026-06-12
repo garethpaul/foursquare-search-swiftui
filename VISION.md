@@ -47,8 +47,8 @@ Current baseline:
   released.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
-- GitHub Actions runs `make check` on macOS, including the credential-free
-  Xcode project parse.
+- GitHub Actions runs the static `make check` baseline on macOS before review,
+  including the credential-free Xcode project parse.
 
 Next priorities:
 

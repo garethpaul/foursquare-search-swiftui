@@ -12,13 +12,15 @@ review.
 ## Objectives
 
 - Run the existing `make check` wrapper in GitHub Actions.
-- Parse the checked-in Xcode project without live Foursquare credentials.
+- Keep the hosted job independent of live Foursquare credentials.
+- Parse the checked-in Xcode project on macOS.
 - Make the workflow presence part of the static baseline contract.
 
 ## Work Completed
 
 - Added `.github/workflows/check.yml` to run `make check` on pushes, pull
   requests, and manual dispatches.
+- Set up Python 3.12 for the Info.plist parsing path used by the shell checker.
 - Run on fixed `macos-15` so `make check` parses the Xcode project as well as
   the Info.plist and static transport guardrails.
 - Pin checkout and Python setup actions by commit, use read-only permissions,
