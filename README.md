@@ -63,7 +63,8 @@ make check
 
 GitHub Actions runs `make check` through `.github/workflows/check.yml` on
 macOS for pushes, pull requests, and manual dispatches, including Xcode project
-parsing without live credentials.
+parsing without live credentials. The workflow does not persist checkout credentials
+after source retrieval.
 
 The `lint`, `test`, and `build` targets currently delegate to the static
 baseline so the repository has a consistent local gate even when Xcode is not
@@ -140,6 +141,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
   verification target guardrails.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions baseline.
+- See `docs/plans/2026-06-12-checkout-credential-boundary.md` for checkout token
+  isolation in the hosted macOS job.
 
 ## Contributing
 
