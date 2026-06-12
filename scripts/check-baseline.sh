@@ -284,11 +284,32 @@ if ! grep -Fq "status: completed" "$IMAGE_SIZE_PLAN"; then
   exit 1
 fi
 
-if ! grep -Fq "status: completed" "$VENUE_SIZE_PLAN" ||
-  ! grep -Fq "make check" "$VENUE_SIZE_PLAN"; then
-  printf '%s\n' "Venue response size boundary plan must be completed and record verification." >&2
-  exit 1
-fi
+python3 - "$VENUE_SIZE_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "All four Make gates",
+    "push run `27392594720`",
+    "pull-request run `27392598472`",
+    "push run `27392614649`",
+    "CodeQL run `27402320529`",
+)
+
+if (
+    statuses != ["status: completed"]
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit(
+        "Venue response size boundary plan must remain completed with actual verification recorded."
+    )
+PY
 
 if ! grep -Fq "make check" "$IMAGE_EMPTY_DATA_PLAN"; then
   printf '%s\n' "Image empty data plan must record make check verification." >&2

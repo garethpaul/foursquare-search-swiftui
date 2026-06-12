@@ -45,3 +45,21 @@ venue list.
 
 Runtime URLSession and UI behavior still require Xcode/device verification; the
 repository has no dedicated test target.
+
+## Work Completed
+
+- Added a 2 MiB venue payload limit and temporary-file download path.
+- Rejected oversized declared lengths, empty files, oversized files, and
+  oversized loaded data before JSON decoding.
+- Preserved HTTPS validation, task cancellation, generic errors, and optional
+  model handling.
+
+## Verification Completed
+
+- All four Make gates, shell syntax, and `git diff --check` passed locally;
+  Xcode project listing was truthfully skipped because Xcode is unavailable.
+- Implementation push run `27392594720` and pull-request run `27392598472`
+  passed at commit `627a74a02100258c514b9e861d173404fb88f750`, including hosted
+  `xcodebuild -list`.
+- Post-merge push run `27392614649` and CodeQL run `27402320529` passed at
+  default-branch merge commit `12a4da004234415b47c786b84d8c6a4e77716f23`.
