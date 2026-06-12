@@ -39,13 +39,16 @@ Current baseline:
   category/address rendering.
 - Image loading retains and cancels URLSession tasks when loaders are released.
 - Empty image response bodies are ignored before image data is published.
+- Remote image payloads use temporary-file downloads and are bounded to 5 MiB
+  by response metadata and actual file size before entering app memory.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
   released.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
-- GitHub Actions runs the static `make check` baseline before review.
+- GitHub Actions runs the static `make check` baseline on macOS before review,
+  including the credential-free Xcode project parse.
 
 Next priorities:
 
@@ -67,8 +70,8 @@ Contribution rules:
 - Keep generated API models reviewable when response shapes change.
 - Verify the venue list on simulator or device for UI changes.
 - Keep credentials and private endpoints out of git.
-- Keep `.github/workflows/check.yml` aligned with the static transport
-  baseline until a macOS/Xcode job is documented.
+- Keep `.github/workflows/check.yml` aligned with the static transport and
+  Xcode project parsing baseline.
 
 ## Security And Privacy
 

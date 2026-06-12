@@ -12,6 +12,7 @@ MAKE_GATES_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-make-gate-al
 IMAGE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md"
 IMAGE_EMPTY_DATA_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md"
 IMAGE_DECODE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md"
+IMAGE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 
@@ -43,6 +44,7 @@ for path in \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md" \
+  "docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -111,13 +113,19 @@ if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
   ! grep -Fq "url.user == nil" "$image_loader" ||
   ! grep -Fq "url.password == nil" "$image_loader" ||
   ! grep -Fq "url.fragment == nil" "$image_loader" ||
-  ! grep -Fq "private var task: URLSessionDataTask?" "$image_loader" ||
+  ! grep -Fq "private var task: URLSessionDownloadTask?" "$image_loader" ||
   ! grep -Fq "deinit" "$image_loader" ||
   ! grep -Fq "task?.cancel()" "$image_loader" ||
-  ! grep -Fq "{ [weak self] data, response, error in" "$image_loader" ||
+  ! grep -Fq "downloadTask(with: url) { [weak self] location, response, error in" "$image_loader" ||
   ! grep -Fq "guard let self = self else { return }" "$image_loader" ||
   ! grep -Fq "!data.isEmpty" "$image_loader" ||
-  grep -Fq "let task = URLSession.shared.dataTask" "$image_loader" ||
+  ! grep -Fq "private let maxImagePayloadBytes = 5 * 1024 * 1024" "$image_loader" ||
+  ! grep -Fq "httpResponse.expectedContentLength < 0" "$image_loader" ||
+  ! grep -Fq "httpResponse.expectedContentLength <= Int64(self.maxImagePayloadBytes)" "$image_loader" ||
+  ! grep -Fq "fileSize.intValue <= self.maxImagePayloadBytes" "$image_loader" ||
+  ! grep -Fq "let data = try? Data(contentsOf: location)" "$image_loader" ||
+  ! grep -Fq "data.count <= self.maxImagePayloadBytes" "$image_loader" ||
+  grep -Fq "URLSession.shared.dataTask" "$image_loader" ||
   grep -Fq "load(urlString: self.url)" "$image_loader"; then
   printf '%s\n' "ImageLoader must require HTTPS URLs with hosts, reject unsafe URL parts, cancel retained tasks, avoid strong task captures, and avoid recursive reloads when data changes." >&2
   exit 1
@@ -260,6 +268,11 @@ if ! grep -Fq "status: completed" "$IMAGE_DECODE_PLAN"; then
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$IMAGE_SIZE_PLAN"; then
+  printf '%s\n' "Image size boundary plan must be marked completed." >&2
+  exit 1
+fi
+
 if ! grep -Fq "make check" "$IMAGE_EMPTY_DATA_PLAN"; then
   printf '%s\n' "Image empty data plan must record make check verification." >&2
   exit 1
@@ -270,10 +283,14 @@ if ! grep -Fq "make check" "$IMAGE_DECODE_PLAN"; then
   exit 1
 fi
 
-if ! grep -Fq "uses: actions/checkout@v4" "$CI_WORKFLOW" || \
-   ! grep -Fq "uses: actions/setup-python@v5" "$CI_WORKFLOW" || \
+if ! grep -Fq "contents: read" "$CI_WORKFLOW" || \
+   ! grep -Fq "cancel-in-progress: true" "$CI_WORKFLOW" || \
+   ! grep -Fq "runs-on: macos-15" "$CI_WORKFLOW" || \
+   ! grep -Fq "timeout-minutes: 10" "$CI_WORKFLOW" || \
+   ! grep -Fq "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" "$CI_WORKFLOW" || \
+   ! grep -Fq "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405" "$CI_WORKFLOW" || \
    ! grep -Fq "run: make check" "$CI_WORKFLOW"; then
-  printf '%s\n' "GitHub Actions check workflow must set up Python and run the make check baseline." >&2
+  printf '%s\n' "GitHub Actions must keep the bounded, least-privilege macOS check contract." >&2
   exit 1
 fi
 

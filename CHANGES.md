@@ -2,8 +2,12 @@
 
 ## 2026-06-10
 
-- Added a GitHub Actions check workflow that runs the existing static
-  `make check` baseline on pushes, pull requests, and manual dispatches.
+- Bounded accepted remote image payloads to 5 MiB using response length
+  metadata and actual downloaded byte count.
+- Added a GitHub Actions workflow that runs the existing `make check` baseline
+  on pushes, pull requests, and manual dispatches.
+- Hardened the workflow with pinned actions, read-only permissions, bounded
+  execution, and a macOS Xcode project parse before review.
 - Added a static guard requiring the CI workflow and completed CI baseline plan
   to remain checked in.
 

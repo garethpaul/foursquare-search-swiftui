@@ -62,7 +62,8 @@ make check
 ```
 
 GitHub Actions runs `make check` through `.github/workflows/check.yml` on
-pushes, pull requests, and manual dispatches.
+macOS for pushes, pull requests, and manual dispatches, including Xcode project
+parsing without live credentials.
 
 The `lint`, `test`, and `build` targets currently delegate to the static
 baseline so the repository has a consistent local gate even when Xcode is not
@@ -76,7 +77,9 @@ embedded userinfo and fragments before starting a request. Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing
-data. SwiftUI icon rendering ignores undecodable image payloads instead of
+data. Accepted image responses are downloaded to temporary files and capped at
+5 MiB using both declared and actual byte counts before loading them into app
+memory. SwiftUI icon rendering ignores undecodable image payloads instead of
 replacing the current icon with a blank image.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
@@ -102,6 +105,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   downloaded data.
 - Image URL userinfo and fragments should be rejected before starting requests.
 - Empty image response bodies should not be published to SwiftUI views.
+- Remote image bodies should not exceed the 5 MiB loader boundary.
 - Undecodable image payloads should not replace the current SwiftUI icon with a
   blank image.
 

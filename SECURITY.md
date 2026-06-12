@@ -32,7 +32,8 @@ Helpful reports include:
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
 - Review found shell execution, subprocess, or dynamic evaluation surfaces; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
-- GitHub Actions runs the static `make check` baseline before review.
+- GitHub Actions runs the static `make check` transport baseline and Xcode
+  project parse with read-only repository permissions before review.
 
 ## Mobile Privacy Notes
 
@@ -41,6 +42,9 @@ If this project requests device permissions such as location, camera, microphone
 Image URL userinfo and fragments should be rejected before requests start.
 Empty image response bodies should be ignored before publishing image data to
 views.
+Remote image responses should use temporary-file downloads and be rejected
+above 5 MiB using both response length metadata and actual file size before
+loading them into app memory.
 Undecodable image payloads should be ignored before replacing SwiftUI icon
 state.
 
