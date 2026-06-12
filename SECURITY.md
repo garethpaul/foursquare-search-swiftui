@@ -40,6 +40,9 @@ Helpful reports include:
 If this project requests device permissions such as location, camera, microphone, contacts, Bluetooth, health data, or local storage access, reports should describe the permission involved and whether sensitive data can be accessed, persisted, or transmitted unexpectedly. Please avoid testing against real third-party user data or accounts you do not control.
 
 Image URL userinfo and fragments should be rejected before requests start.
+Venue search responses should use temporary-file downloads and reject empty or
+oversized JSON bodies before decoding; the maintained limit is 2 MiB using
+declared and actual file sizes.
 Empty image response bodies should be ignored before publishing image data to
 views.
 Remote image responses should use temporary-file downloads and be rejected

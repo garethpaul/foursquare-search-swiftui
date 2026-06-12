@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-12
+
+- Bounded accepted Foursquare venue search JSON to 2 MiB using a temporary-file
+  download, response length metadata, and actual file size before decoding.
+- Routed empty and oversized venue bodies through the existing visible error
+  state and added a static transport contract.
+
 ## 2026-06-10
 
 - Bounded accepted remote image payloads to 5 MiB using response length

@@ -1,7 +1,7 @@
 ---
 title: Foursquare Venue Response Size Boundary
 date: 2026-06-12
-status: planned
+status: completed
 execution: code
 ---
 
@@ -23,9 +23,11 @@ venue list.
 
 ## Implementation
 
-- Add a 2 MiB venue response limit to `VenueFetcher`.
+- Add a 2 MiB venue response limit and temporary-file download to
+  `VenueFetcher`.
 - Require `expectedContentLength` to be unknown or within the limit.
-- Require non-empty response data within the same limit before decoding.
+- Require a non-empty temporary file within the same limit before loading and
+  decoding it.
 - Route rejected payloads through the existing generic no-data error state so
   no response body or endpoint details are exposed to users.
 - Extend `scripts/check-baseline.sh`, README, VISION, SECURITY, and CHANGES to

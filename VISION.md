@@ -41,6 +41,9 @@ Current baseline:
 - Empty image response bodies are ignored before image data is published.
 - Remote image payloads use temporary-file downloads and are bounded to 5 MiB
   by response metadata and actual file size before entering app memory.
+- Venue search payloads use temporary-file downloads and are bounded to 2 MiB
+  by response metadata and actual file size before decoding; empty responses
+  remain visible error states.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
@@ -59,6 +62,7 @@ Next priorities:
 - Keep undecodable image payload handling visible as icon rendering evolves
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves
+- Keep venue JSON response sizes bounded before decoding
 - Keep venue endpoint URL-part validation visible as configuration evolves
 - Keep image URL-part validation visible as remote image handling evolves
 - Keep local verification targets available even while full Xcode testing needs
