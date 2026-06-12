@@ -16,6 +16,7 @@ IMAGE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-swiftui-image-size-b
 VENUE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
+CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
 
 require_file() {
   path=$1
@@ -54,6 +55,7 @@ for path in \
   "docs/plans/2026-06-09-foursquare-swiftui-image-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
   "docs/plans/2026-06-10-ci-baseline.md" \
+  "docs/plans/2026-06-12-checkout-credential-boundary.md" \
   ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
@@ -311,8 +313,41 @@ if ! grep -Fq "contents: read" "$CI_WORKFLOW" || \
   exit 1
 fi
 
+if [ "$(grep -Fc "uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" "$CI_WORKFLOW")" -ne 1 ] || \
+   [ "$(grep -Fc "persist-credentials: false" "$CI_WORKFLOW")" -ne 1 ]; then
+  printf '%s\n' "GitHub Actions must use one pinned checkout without persisting credentials." >&2
+  exit 1
+fi
+
+if ! awk '
+  /uses: actions\/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10/ { checkout = 1; next }
+  checkout && /^[[:space:]]+with:[[:space:]]*$/ { options = 1; next }
+  checkout && options && /^[[:space:]]+persist-credentials: false[[:space:]]*$/ { protected = 1; next }
+  checkout && /^[[:space:]]+- / { exit }
+  END { exit protected ? 0 : 1 }
+' "$CI_WORKFLOW"; then
+  printf '%s\n' "Checkout credential persistence must be disabled on the pinned checkout step." >&2
+  exit 1
+fi
+
 if ! grep -Fq "Status: Completed" "$CI_PLAN" || ! grep -Fq "make check" "$CI_PLAN"; then
   printf '%s\n' "Foursquare Search SwiftUI CI baseline plan must record completed status and make check verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$CHECKOUT_CREDENTIAL_PLAN" || \
+   ! grep -Fq 'local `make check` passed' "$CHECKOUT_CREDENTIAL_PLAN" || \
+   ! grep -Fq "external working directory" "$CHECKOUT_CREDENTIAL_PLAN" || \
+   ! grep -Fq "hostile mutations were rejected" "$CHECKOUT_CREDENTIAL_PLAN"; then
+  printf '%s\n' "Checkout credential boundary plan must record completed verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "does not persist checkout credentials" "$ROOT_DIR/README.md" || \
+   ! grep -Fq "does not persist checkout credentials" "$ROOT_DIR/SECURITY.md" || \
+   ! grep -Fq "credential-free Xcode project parse" "$ROOT_DIR/VISION.md" || \
+   ! grep -Fq "Stopped GitHub Actions checkout credential persistence" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project guidance must document the checkout credential boundary." >&2
   exit 1
 fi
 
