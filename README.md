@@ -61,6 +61,9 @@ make build
 make check
 ```
 
+GitHub Actions runs `make check` through `.github/workflows/check.yml` on
+pushes, pull requests, and manual dispatches.
+
 The `lint`, `test`, and `build` targets currently delegate to the static
 baseline so the repository has a consistent local gate even when Xcode is not
 installed. The baseline verifies that App Transport Security is not globally
@@ -128,6 +131,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
   undecodable image payload guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
   verification target guardrails.
+- See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions baseline.
 
 ## Contributing
 
