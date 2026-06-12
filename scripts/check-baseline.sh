@@ -13,6 +13,7 @@ IMAGE_URL_PARTS_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-u
 IMAGE_EMPTY_DATA_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md"
 IMAGE_DECODE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md"
 IMAGE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md"
+VENUE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 
@@ -45,6 +46,7 @@ for path in \
   "docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md" \
   "docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md" \
+  "docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -97,10 +99,19 @@ if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq "url.password == nil" "$venue" ||
   ! grep -Fq "url.fragment == nil" "$venue" ||
   ! grep -Fq 'errorMessage' "$venue" ||
-  ! grep -Fq "private var task: URLSessionDataTask?" "$venue" ||
+  ! grep -Fq "private var task: URLSessionDownloadTask?" "$venue" ||
   ! grep -Fq "deinit" "$venue" ||
   ! grep -Fq "task?.cancel()" "$venue" ||
   ! grep -Fq "task?.resume()" "$venue" ||
+  ! grep -Fq "private let maxVenuePayloadBytes = 2 * 1024 * 1024" "$venue" ||
+  ! grep -Fq "httpResponse.expectedContentLength < 0" "$venue" ||
+  ! grep -Fq "httpResponse.expectedContentLength <= Int64(self.maxVenuePayloadBytes)" "$venue" ||
+  ! grep -Fq "let attributes = try? FileManager.default.attributesOfItem(atPath: location.path)" "$venue" ||
+  ! grep -Fq "fileSize.intValue <= self.maxVenuePayloadBytes" "$venue" ||
+  ! grep -Fq "let data = try? Data(contentsOf: location)" "$venue" ||
+  ! grep -Fq "!data.isEmpty" "$venue" ||
+  ! grep -Fq "data.count <= self.maxVenuePayloadBytes" "$venue" ||
+  grep -Fq "URLSession.shared.dataTask" "$venue" ||
   grep -Fq 'URL(string: "FOURSQUARE_VENUE_SEARCH")!' "$venue" ||
   grep -Eq 'responseData\?\.(venues)\)!|URL\(string:.*\)!|print\(' "$venue"; then
   printf '%s\n' "VenueFetcher must use local HTTPS host configuration, retain request tasks, and avoid force unwraps or print diagnostics." >&2
@@ -270,6 +281,12 @@ fi
 
 if ! grep -Fq "status: completed" "$IMAGE_SIZE_PLAN"; then
   printf '%s\n' "Image size boundary plan must be marked completed." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$VENUE_SIZE_PLAN" ||
+  ! grep -Fq "make check" "$VENUE_SIZE_PLAN"; then
+  printf '%s\n' "Venue response size boundary plan must be completed and record verification." >&2
   exit 1
 fi
 

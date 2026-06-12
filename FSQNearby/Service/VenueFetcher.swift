@@ -9,9 +9,10 @@
 import Foundation
 
 public class VenueFetcher: ObservableObject {
+    private let maxVenuePayloadBytes = 2 * 1024 * 1024
     @Published var venues = [Venue]()
     @Published var errorMessage: String?
-    private var task: URLSessionDataTask?
+    private var task: URLSessionDownloadTask?
     
     init() {
         load()
@@ -27,7 +28,7 @@ public class VenueFetcher: ObservableObject {
             return
         }
 
-        task = URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+        task = URLSession.shared.downloadTask(with: url) { [weak self] location, response, error in
             guard let self = self else { return }
 
             if error != nil {
@@ -37,7 +38,16 @@ public class VenueFetcher: ObservableObject {
 
             guard let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode),
-                let data = data else {
+                httpResponse.expectedContentLength < 0 ||
+                    httpResponse.expectedContentLength <= Int64(self.maxVenuePayloadBytes),
+                let location = location,
+                let attributes = try? FileManager.default.attributesOfItem(atPath: location.path),
+                let fileSize = attributes[.size] as? NSNumber,
+                fileSize.intValue > 0,
+                fileSize.intValue <= self.maxVenuePayloadBytes,
+                let data = try? Data(contentsOf: location),
+                !data.isEmpty,
+                data.count <= self.maxVenuePayloadBytes else {
                 self.setError("Venue search returned no data.")
                 return
             }

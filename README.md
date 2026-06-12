@@ -73,7 +73,9 @@ and image loads require HTTPS URLs with hosts, optional venue fields are
 rendered safely, image requests are cancelled when loaders are deallocated, and
 runtime diagnostics do not use `print`. Venue search requests are also retained
 and cancelled when fetchers are deallocated. Venue endpoint parsing rejects
-embedded userinfo and fragments before starting a request. Image request
+embedded userinfo and fragments before starting a request. Venue search JSON is
+downloaded to a temporary file and rejected when its declared or actual body
+exceeds 2 MiB; empty bodies use the existing visible error state. Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing
@@ -123,6 +125,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   image request lifecycle guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md` for
   venue request lifecycle guardrails.
+- See `docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md` for
+  venue response memory limits.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md` for
   image request callback capture guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md` for venue
