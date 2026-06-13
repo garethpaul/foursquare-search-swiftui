@@ -42,6 +42,7 @@ class ImageLoader: ObservableObject {
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode),
+                self.isImageResponse(httpResponse),
                 httpResponse.expectedContentLength < 0 ||
                     httpResponse.expectedContentLength <= Int64(self.maxImagePayloadBytes),
                 let location = location,
@@ -58,5 +59,16 @@ class ImageLoader: ObservableObject {
             }
         }
         task?.resume()
+    }
+
+    private func isImageResponse(_ response: HTTPURLResponse) -> Bool {
+        guard let contentType = response.value(forHTTPHeaderField: "Content-Type"),
+            let mediaType = contentType.split(separator: ";", maxSplits: 1).first?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased() else {
+            return false
+        }
+
+        return mediaType.hasPrefix("image/") && mediaType.count > "image/".count
     }
 }

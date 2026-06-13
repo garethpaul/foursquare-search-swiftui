@@ -81,7 +81,8 @@ existing visible error state. Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing
-data. Accepted image responses are downloaded to temporary files and capped at
+data. Accepted image responses must declare an `image/*` Content-Type before
+temporary-file reads, are downloaded to temporary files, and are capped at
 5 MiB using both declared and actual byte counts before loading them into app
 memory. SwiftUI icon rendering ignores undecodable image payloads instead of
 replacing the current icon with a blank image.
@@ -110,6 +111,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Image URL userinfo and fragments should be rejected before starting requests.
 - Empty image response bodies should not be published to SwiftUI views.
 - Remote image bodies should not exceed the 5 MiB loader boundary.
+- Remote image responses should declare an `image/*` media type before file
+  reads.
 - Undecodable image payloads should not replace the current SwiftUI icon with a
   blank image.
 
@@ -139,6 +142,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   image response guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md` for
   undecodable image payload guardrails.
+- See `docs/plans/2026-06-13-foursquare-image-content-type-boundary.md` for
+  remote image media-type validation.
 - See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
   verification target guardrails.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions baseline.

@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-13
+
+- Required remote image responses to declare an `image/*` Content-Type before
+  temporary-file metadata or bytes are read.
+- Added a static image media-type and validation-order contract.
+
 ## 2026-06-12
 
 - Stopped GitHub Actions checkout credential persistence and added an exact
