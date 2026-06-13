@@ -17,6 +17,7 @@ VENUE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-12-foursquare-venue-response-size-
 VENUE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md"
 IMAGE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-image-content-type-boundary.md"
 VENUE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md"
+IMAGE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-image-final-url-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -54,6 +55,7 @@ for path in \
   "docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md" \
   "docs/plans/2026-06-13-foursquare-image-content-type-boundary.md" \
   "docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md" \
+  "docs/plans/2026-06-13-image-final-url-boundary.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -161,6 +163,28 @@ if not response_cast < final_url_guard < status_guard < media_guard < file_metad
 PY
 
 image_loader="$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
+python3 - "$image_loader" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+load = source.split("private func load", 1)[-1].split("private func isImageResponse", 1)[0]
+required = (
+    "URLSession.shared.downloadTask(with: url)",
+    "let httpResponse = response as? HTTPURLResponse",
+    "httpResponse.url == url",
+    "(200..<300).contains(httpResponse.statusCode)",
+    "self.isImageResponse(httpResponse)",
+    "let attributes = try? FileManager.default.attributesOfItem",
+    "let data = try? Data(contentsOf: location)",
+)
+positions = [load.find(item) for item in required]
+if any(load.count(item) != 1 for item in required):
+    raise SystemExit("Image loading must keep one request and exact final URL guard.")
+if -1 in positions or positions != sorted(positions):
+    raise SystemExit("Image final URL validation must precede status, media, file, and data processing.")
+PY
+
 if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
   ! grep -Fq 'url.host?.isEmpty == false' "$image_loader" ||
   ! grep -Fq "url.user == nil" "$image_loader" ||
@@ -477,5 +501,32 @@ if (
 ):
     raise SystemExit("Venue final URL plan must remain completed with actual verification recorded.")
 PY
+
+python3 - "$IMAGE_FINAL_URL_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+required = (
+    "five hostile mutations were rejected",
+    "all four Make gates passed",
+    "xcodebuild was unavailable",
+    "No live image request",
+)
+if statuses != ["status: completed"] or any(item not in plan for item in required):
+    raise SystemExit("Image final URL plan must record completed local verification.")
+PY
+
+if ! grep -Fq "exact final image response URL" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "exact final URL should match" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "exact request URL provenance" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Required exact final image response URLs" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "exact final image response URL validation" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project docs must preserve image response provenance validation." >&2
+  exit 1
+fi
 
 printf '%s\n' "foursquare-search-swiftui transport baseline checks passed."

@@ -113,6 +113,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Remote image bodies should not exceed the 5 MiB loader boundary.
 - Remote image responses should declare an `image/*` media type before file
   reads.
+- Require the exact final image response URL to match the validated request
+  before status, media, size, file, or decode processing.
 - Require the exact final venue response URL to match the configured request
   before status, media, size, file, or decode processing. This rejects redirected
   results but does not prevent URLSession from following the redirect.
