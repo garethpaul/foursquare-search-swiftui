@@ -18,6 +18,7 @@ VENUE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-conten
 IMAGE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-image-content-type-boundary.md"
 VENUE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md"
 IMAGE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-image-final-url-boundary.md"
+LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -56,6 +57,7 @@ for path in \
   "docs/plans/2026-06-13-foursquare-image-content-type-boundary.md" \
   "docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md" \
   "docs/plans/2026-06-13-image-final-url-boundary.md" \
+  "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -68,6 +70,20 @@ for path in \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
 done
+
+if ! grep -Fq 'ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||
+  ! grep -Fq '"$(ROOT)/scripts/check-baseline.sh"' "$ROOT_DIR/Makefile"; then
+  printf '%s\n' "Makefile verification must resolve the checker from the loaded Makefile." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "from /tmp" "$LOCATION_INDEPENDENT_MAKE_PLAN" ||
+  ! grep -Fq "absolute Makefile path" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "Made static verification independent" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Location-independent Make plan and guidance must record completed external verification." >&2
+  exit 1
+fi
 
 makefile="$ROOT_DIR/Makefile"
 if ! grep -Eq '^\.PHONY: .*build.*check.*lint.*test|^\.PHONY: .*build.*lint.*test.*check' "$makefile" ||

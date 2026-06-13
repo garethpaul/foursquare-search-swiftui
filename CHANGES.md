@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Made static verification independent of the caller's working directory by
+  resolving the baseline checker from the loaded Makefile.
 - Required exact final image response URLs before response and file processing.
 - Required the exact final venue response URL to match the configured request
   before status, media, size, file, or decode processing.
