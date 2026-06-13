@@ -4,6 +4,8 @@
 
 - Stopped GitHub Actions checkout credential persistence and added an exact
   contract for the single pinned checkout step.
+- Required explicit JSON response media types before venue response files are
+  read and decoded.
 - Bounded accepted Foursquare venue search JSON to 2 MiB using a temporary-file
   download, response length metadata, and actual file size before decoding.
 - Routed empty and oversized venue bodies through the existing visible error

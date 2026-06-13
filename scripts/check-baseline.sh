@@ -14,6 +14,7 @@ IMAGE_EMPTY_DATA_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-
 IMAGE_DECODE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md"
 IMAGE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md"
 VENUE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md"
+VENUE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -48,6 +49,7 @@ for path in \
   "docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md" \
   "docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md" \
   "docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md" \
+  "docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -119,6 +121,31 @@ if ! grep -Fq "venueSearchURL" "$venue" ||
   printf '%s\n' "VenueFetcher must use local HTTPS host configuration, retain request tasks, and avoid force unwraps or print diagnostics." >&2
   exit 1
 fi
+
+python3 - "$venue" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+required = (
+    'private func isJSONResponse(_ response: HTTPURLResponse) -> Bool',
+    'response.value(forHTTPHeaderField: "Content-Type")',
+    'mediaType == "application/json"',
+    'mediaType.hasPrefix("application/")',
+    'mediaType.hasSuffix("+json")',
+    'self.isJSONResponse(httpResponse)',
+)
+if any(source.count(item) != 1 for item in required):
+    raise SystemExit("Venue responses must use one exact JSON media-type boundary.")
+if 'text/html' in source:
+    raise SystemExit("Venue JSON media-type validation must not allow HTML.")
+
+media_guard = source.index('self.isJSONResponse(httpResponse)')
+file_metadata = source.index('FileManager.default.attributesOfItem')
+file_read = source.index('Data(contentsOf: location)')
+if not media_guard < file_metadata < file_read:
+    raise SystemExit("Venue JSON media-type validation must run before the response file is read.")
+PY
 
 image_loader="$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
 if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
@@ -292,6 +319,15 @@ if ! grep -Fq "status: completed" "$VENUE_SIZE_PLAN" ||
   exit 1
 fi
 
+if ! grep -Fq "status: completed" "$VENUE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "media-type guard mutation failed" "$VENUE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "HTML allowlist mutation failed" "$VENUE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "late validation mutation failed" "$VENUE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "hosted pull-request check" "$VENUE_CONTENT_TYPE_PLAN"; then
+  printf '%s\n' "Venue content-type boundary plan must record completed verification." >&2
+  exit 1
+fi
+
 if ! grep -Fq "make check" "$IMAGE_EMPTY_DATA_PLAN"; then
   printf '%s\n' "Image empty data plan must record make check verification." >&2
   exit 1
@@ -348,6 +384,14 @@ if ! grep -Fq "does not persist checkout credentials" "$ROOT_DIR/README.md" || \
    ! grep -Fq "credential-free Xcode project parse" "$ROOT_DIR/VISION.md" || \
    ! grep -Fq "Stopped GitHub Actions checkout credential persistence" "$ROOT_DIR/CHANGES.md"; then
   printf '%s\n' "Project guidance must document the checkout credential boundary." >&2
+  exit 1
+fi
+
+if ! grep -Fq "explicit JSON Content-Type" "$ROOT_DIR/README.md" || \
+   ! grep -Fq "explicit JSON media type" "$ROOT_DIR/SECURITY.md" || \
+   ! grep -Fq "explicit JSON media types" "$ROOT_DIR/VISION.md" || \
+   ! grep -Fq "Required explicit JSON response media types" "$ROOT_DIR/CHANGES.md"; then
+  printf '%s\n' "Project guidance must document the venue JSON media-type boundary." >&2
   exit 1
 fi
 

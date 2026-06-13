@@ -43,7 +43,8 @@ If this project requests device permissions such as location, camera, microphone
 Image URL userinfo and fragments should be rejected before requests start.
 Venue search responses should use temporary-file downloads and reject empty or
 oversized JSON bodies before decoding; the maintained limit is 2 MiB using
-declared and actual file sizes.
+declared and actual file sizes. They must also declare an explicit JSON media type
+before the downloaded file is read.
 Empty image response bodies should be ignored before publishing image data to
 views.
 Remote image responses should use temporary-file downloads and be rejected

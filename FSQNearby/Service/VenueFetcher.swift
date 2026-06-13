@@ -38,6 +38,7 @@ public class VenueFetcher: ObservableObject {
 
             guard let httpResponse = response as? HTTPURLResponse,
                 (200..<300).contains(httpResponse.statusCode),
+                self.isJSONResponse(httpResponse),
                 httpResponse.expectedContentLength < 0 ||
                     httpResponse.expectedContentLength <= Int64(self.maxVenuePayloadBytes),
                 let location = location,
@@ -64,6 +65,18 @@ public class VenueFetcher: ObservableObject {
             }
         }
         task?.resume()
+    }
+
+    private func isJSONResponse(_ response: HTTPURLResponse) -> Bool {
+        guard let contentType = response.value(forHTTPHeaderField: "Content-Type"),
+            let mediaType = contentType.split(separator: ";", maxSplits: 1).first?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased() else {
+            return false
+        }
+
+        return mediaType == "application/json" ||
+            (mediaType.hasPrefix("application/") && mediaType.hasSuffix("+json"))
     }
 
     private func venueSearchURL() -> URL? {

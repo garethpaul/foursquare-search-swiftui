@@ -42,8 +42,9 @@ Current baseline:
 - Remote image payloads use temporary-file downloads and are bounded to 5 MiB
   by response metadata and actual file size before entering app memory.
 - Venue search payloads use temporary-file downloads and are bounded to 2 MiB
-  by response metadata and actual file size before decoding; empty responses
-  remain visible error states.
+  by response metadata and actual file size before decoding; explicit JSON media types
+  are required before file reads, and empty responses remain
+  visible error states.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
