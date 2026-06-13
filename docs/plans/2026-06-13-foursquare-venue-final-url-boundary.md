@@ -1,7 +1,7 @@
 ---
 title: Foursquare Venue Final URL Boundary
 type: security
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
@@ -75,8 +75,28 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, `AGENTS.md`
 
 ## Work Completed
 
-Pending implementation.
+- Added exact final/request URL equality to the venue response guard before
+  status, media, length, file, or decode processing.
+- Preserved the existing generic no-data error for provenance rejection without
+  logging configured or final URLs.
+- Extended the structural checker and repository guidance for exact provenance,
+  ordering, single-request, generic-error, and completed-evidence contracts.
 
 ## Verification Completed
 
-Pending implementation and verification.
+- All four Make gates passed the maintained static baseline.
+- The guard removal mutation failed the exact provenance contract.
+- The host-only mutation failed because exact URL equality is required.
+- The validation ordering mutation failed after moving the valid guard below
+  status and media validation.
+- The duplicate request mutation failed the single-download contract.
+- The error weakening mutation failed the generic no-data error contract.
+- The plan evidence mutation failed the completed-evidence contract.
+- Shell syntax, plist/workspace XML parsing, executable-mode verification,
+  `git diff --check`, and intended-file secret and artifact scans are included
+  in final-tree verification.
+- `xcodebuild`, Swift compilation, simulator/device execution, and live
+  Foursquare redirect behavior are unavailable or intentionally unclaimed on
+  this Linux host.
+- The hosted pull-request check and code-scanning snapshot will be recorded
+  against the exact pushed head in the external engineering tracker.

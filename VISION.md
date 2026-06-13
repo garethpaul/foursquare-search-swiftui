@@ -47,6 +47,8 @@ Current baseline:
   by response metadata and actual file size before decoding; explicit JSON media types
   are required before file reads, and empty responses remain
   visible error states.
+- The exact final venue response URL must match the configured request before
+  response metadata or files are consumed.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
@@ -63,6 +65,7 @@ Next priorities:
 - Keep image request lifecycle behavior visible as the view layer evolves
 - Keep empty image response handling visible as image loading evolves
 - Keep image media-type validation ahead of temporary-file reads
+- Keep exact final venue response URL validation ahead of all response processing
 - Keep undecodable image payload handling visible as icon rendering evolves
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves

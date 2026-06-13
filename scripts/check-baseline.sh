@@ -16,6 +16,7 @@ IMAGE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-swiftui-image-size-b
 VENUE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md"
 VENUE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md"
 IMAGE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-image-content-type-boundary.md"
+VENUE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -51,6 +52,8 @@ for path in \
   "docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md" \
   "docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md" \
   "docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md" \
+  "docs/plans/2026-06-13-foursquare-image-content-type-boundary.md" \
+  "docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -128,6 +131,12 @@ import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
+if source.count("URLSession.shared.downloadTask(with: url)") != 1:
+    raise SystemExit("VenueFetcher must retain one configured download request.")
+if source.count("httpResponse.url == url") != 1:
+    raise SystemExit("Venue responses must match the exact configured request URL.")
+if source.count('self.setError("Venue search returned no data.")') != 1:
+    raise SystemExit("Rejected venue responses must retain one generic no-data error.")
 required = (
     'private func isJSONResponse(_ response: HTTPURLResponse) -> Bool',
     'response.value(forHTTPHeaderField: "Content-Type")',
@@ -141,11 +150,14 @@ if any(source.count(item) != 1 for item in required):
 if 'text/html' in source:
     raise SystemExit("Venue JSON media-type validation must not allow HTML.")
 
+response_cast = source.index('response as? HTTPURLResponse')
+final_url_guard = source.index('httpResponse.url == url')
+status_guard = source.index('(200..<300).contains(httpResponse.statusCode)')
 media_guard = source.index('self.isJSONResponse(httpResponse)')
 file_metadata = source.index('FileManager.default.attributesOfItem')
 file_read = source.index('Data(contentsOf: location)')
-if not media_guard < file_metadata < file_read:
-    raise SystemExit("Venue JSON media-type validation must run before the response file is read.")
+if not response_cast < final_url_guard < status_guard < media_guard < file_metadata < file_read:
+    raise SystemExit("Venue final URL, status, and JSON media validation must precede file reads.")
 PY
 
 image_loader="$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
@@ -429,5 +441,41 @@ if ! grep -Fq "explicit JSON Content-Type" "$ROOT_DIR/README.md" || \
   printf '%s\n' "Project guidance must document the venue JSON media-type boundary." >&2
   exit 1
 fi
+
+if ! grep -Fq "exact final venue response URL" "$ROOT_DIR/README.md" || \
+   ! grep -Fq "exact final venue response URL" "$ROOT_DIR/SECURITY.md" || \
+   ! grep -Fq "exact final venue response URL" "$ROOT_DIR/VISION.md" || \
+   ! grep -Fq "exact final venue response URL" "$ROOT_DIR/CHANGES.md" || \
+   ! grep -Fq "exact final venue response URL" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must document the venue final URL boundary." >&2
+  exit 1
+fi
+
+python3 - "$VENUE_FINAL_URL_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "guard removal mutation failed",
+    "host-only mutation failed",
+    "validation ordering mutation failed",
+    "duplicate request mutation failed",
+    "error weakening mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit("Venue final URL plan must remain completed with actual verification recorded.")
+PY
 
 printf '%s\n' "foursquare-search-swiftui transport baseline checks passed."
