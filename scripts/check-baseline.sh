@@ -15,6 +15,7 @@ IMAGE_DECODE_PLAN="$ROOT_DIR/docs/plans/2026-06-09-foursquare-swiftui-image-deco
 IMAGE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-10-foursquare-swiftui-image-size-boundary.md"
 VENUE_SIZE_PLAN="$ROOT_DIR/docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md"
 VENUE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-content-type-boundary.md"
+IMAGE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-image-content-type-boundary.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -171,6 +172,31 @@ if ! grep -Fq 'url.scheme == "https"' "$image_loader" ||
   exit 1
 fi
 
+python3 - "$image_loader" <<'PY'
+import sys
+from pathlib import Path
+
+source = Path(sys.argv[1]).read_text()
+required = (
+    'private func isImageResponse(_ response: HTTPURLResponse) -> Bool',
+    'response.value(forHTTPHeaderField: "Content-Type")',
+    '.trimmingCharacters(in: .whitespacesAndNewlines)',
+    '.lowercased()',
+    'mediaType.hasPrefix("image/")',
+    'mediaType.count > "image/".count',
+    'self.isImageResponse(httpResponse)',
+)
+if any(source.count(item) != 1 for item in required):
+    raise SystemExit("Image responses must retain one explicit image media-type guard.")
+
+status_guard = source.index('(200..<300).contains(httpResponse.statusCode)')
+media_guard = source.index('self.isImageResponse(httpResponse)')
+file_read = source.index('FileManager.default.attributesOfItem')
+data_read = source.index('Data(contentsOf: location)')
+if not status_guard < media_guard < file_read < data_read:
+    raise SystemExit("Image media-type validation must precede temporary-file reads.")
+PY
+
 if ! grep -Fq "fetcher.errorMessage" "$ROOT_DIR/FSQNearby/View/VenueListView.swift" ||
   ! grep -Fq "No venues found." "$ROOT_DIR/FSQNearby/View/VenueListView.swift"; then
   printf '%s\n' "VenueListView must expose error and empty states." >&2
@@ -325,6 +351,15 @@ if ! grep -Fq "status: completed" "$VENUE_CONTENT_TYPE_PLAN" ||
   ! grep -Fq "late validation mutation failed" "$VENUE_CONTENT_TYPE_PLAN" ||
   ! grep -Fq "hosted pull-request check" "$VENUE_CONTENT_TYPE_PLAN"; then
   printf '%s\n' "Venue content-type boundary plan must record completed verification." >&2
+  exit 1
+fi
+
+if ! grep -Fq "status: completed" "$IMAGE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "media-type helper mutation failed" "$IMAGE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "HTML allowlist mutation failed" "$IMAGE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "late validation mutation failed" "$IMAGE_CONTENT_TYPE_PLAN" ||
+  ! grep -Fq "hosted pull-request check" "$IMAGE_CONTENT_TYPE_PLAN"; then
+  printf '%s\n' "Image content-type boundary plan must record completed verification." >&2
   exit 1
 fi
 

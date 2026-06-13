@@ -39,6 +39,8 @@ Current baseline:
   category/address rendering.
 - Image loading retains and cancels URLSession tasks when loaders are released.
 - Empty image response bodies are ignored before image data is published.
+- Remote image responses require an explicit `image/*` media type before
+  temporary-file reads.
 - Remote image payloads use temporary-file downloads and are bounded to 5 MiB
   by response metadata and actual file size before entering app memory.
 - Venue search payloads use temporary-file downloads and are bounded to 2 MiB
@@ -60,6 +62,7 @@ Next priorities:
 - Add tests or manual verification notes for decoded venue responses
 - Keep image request lifecycle behavior visible as the view layer evolves
 - Keep empty image response handling visible as image loading evolves
+- Keep image media-type validation ahead of temporary-file reads
 - Keep undecodable image payload handling visible as icon rendering evolves
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves

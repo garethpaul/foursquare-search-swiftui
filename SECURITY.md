@@ -47,6 +47,8 @@ declared and actual file sizes. They must also declare an explicit JSON media ty
 before the downloaded file is read.
 Empty image response bodies should be ignored before publishing image data to
 views.
+Remote image responses should declare an `image/*` media type before temporary
+file attributes or bytes are read.
 Remote image responses should use temporary-file downloads and be rejected
 above 5 MiB using both response length metadata and actual file size before
 loading them into app memory.

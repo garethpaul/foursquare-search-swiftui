@@ -1,7 +1,7 @@
 ---
 title: Foursquare Image Content-Type Boundary
 type: security
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
@@ -81,8 +81,28 @@ Files: `README.md`, `SECURITY.md`, `VISION.md`, `CHANGES.md`, `AGENTS.md`
 
 ## Work Completed
 
-Pending implementation.
+- Added `isImageResponse` to normalize the declared media type by removing
+  parameters, trimming whitespace, and lowercasing it.
+- Required a nonempty `image/*` media type after the 2xx status guard and before
+  temporary-file metadata or bytes are read.
+- Preserved URL validation, task lifecycle, weak capture, declared and actual
+  5 MiB limits, empty-body rejection, and main-thread publication.
+- Added static source, ordering, documentation, and completed-plan contracts.
 
 ## Verification Completed
 
-Pending implementation and verification.
+- The media-type helper mutation failed after renaming the required helper.
+- The HTML allowlist mutation failed after replacing the image policy with
+  `text/html`.
+- The late validation mutation failed after moving the media-type guard below
+  `Data(contentsOf:)`.
+- `make check`, `make lint`, `make test`, and `make build` passed the maintained
+  static baseline; each correctly reported that local `xcodebuild` is
+  unavailable.
+- `sh -n scripts/check-baseline.sh`, Info.plist and workspace XML parsing,
+  executable-mode verification, and `git diff --check` passed.
+- Intended-path artifact and secret scans found no generated files or embedded
+  credentials.
+- The hosted pull-request check and code-scanning results are recorded against
+  the exact pushed head in the external engineering tracker. Embedding that SHA
+  here would create a new head without exact-head hosted evidence.

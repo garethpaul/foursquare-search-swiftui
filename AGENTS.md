@@ -46,6 +46,8 @@
 - Venue and image URLSession tasks should stay tied to their observable object lifecycles.
 - Image URLSession callbacks should use weak task captures before publishing downloaded data.
 - Image URL userinfo and fragments should be rejected before starting requests.
+- Remote image responses should require an `image/*` Content-Type before
+  temporary-file metadata or bytes are read.
 
 ## Agent workflow
 
