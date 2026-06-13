@@ -1,7 +1,7 @@
 ---
 title: Foursquare Venue Content-Type Boundary
 date: 2026-06-13
-status: in_progress
+status: completed
 execution: code
 ---
 
@@ -37,3 +37,23 @@ decode HTML or another response type within the 2 MiB limit.
   file read; each hostile mutation must fail the maintained gate.
 - Take one bounded exact-head pull-request and CodeQL snapshot after push; do
   not poll.
+
+## Work Completed
+
+- Added case-insensitive parsing for `application/json` and structured
+  `application/*+json` response media types with optional parameters.
+- Required the media-type guard before temporary-file metadata lookup and file
+  reads while preserving the existing status, size, decoding, lifecycle, URL,
+  and user-visible error boundaries.
+- Added order-sensitive source, documentation, and completed-plan contracts.
+
+## Verification Completed
+
+- A pristine copied tree passed `make check` with completed-plan evidence
+  supplied in the copy.
+- The media-type guard mutation failed after removing the response check.
+- The HTML allowlist mutation failed after accepting `text/html`.
+- The late validation mutation failed after moving the guard below the file
+  read.
+- The hosted pull-request check is a post-push evidence step; its bounded
+  exact-head result is recorded after the implementation commit is pushed.
