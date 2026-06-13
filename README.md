@@ -61,6 +61,10 @@ make build
 make check
 ```
 
+Use the absolute Makefile path to run the same gates from another working
+directory. Verification resolves the checker relative to the loaded Makefile
+rather than the caller's directory.
+
 GitHub Actions runs `make check` through `.github/workflows/check.yml` on
 macOS for pushes, pull requests, and manual dispatches, including Xcode project
 parsing without live credentials. The workflow does not persist checkout credentials
