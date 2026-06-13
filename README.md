@@ -113,6 +113,9 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Remote image bodies should not exceed the 5 MiB loader boundary.
 - Remote image responses should declare an `image/*` media type before file
   reads.
+- Require the exact final venue response URL to match the configured request
+  before status, media, size, file, or decode processing. This rejects redirected
+  results but does not prevent URLSession from following the redirect.
 - Undecodable image payloads should not replace the current SwiftUI icon with a
   blank image.
 
@@ -132,6 +135,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   venue request lifecycle guardrails.
 - See `docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md` for
   venue response memory limits.
+- See `docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md` for venue
+  response provenance validation.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md` for
   image request callback capture guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md` for venue

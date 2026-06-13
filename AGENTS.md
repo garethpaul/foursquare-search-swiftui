@@ -48,6 +48,8 @@
 - Image URL userinfo and fragments should be rejected before starting requests.
 - Remote image responses should require an `image/*` Content-Type before
   temporary-file metadata or bytes are read.
+- Keep exact final venue response URL validation ahead of status, media, size,
+  file, and decode processing; do not describe it as redirect prevention.
 
 ## Agent workflow
 

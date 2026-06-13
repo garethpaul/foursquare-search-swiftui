@@ -2,6 +2,10 @@
 
 ## 2026-06-13
 
+- Required the exact final venue response URL to match the configured request
+  before status, media, size, file, or decode processing.
+- Added provenance ordering, single-request, generic-error, documentation, and
+  evidence contracts.
 - Required remote image responses to declare an `image/*` Content-Type before
   temporary-file metadata or bytes are read.
 - Added a static image media-type and validation-order contract.

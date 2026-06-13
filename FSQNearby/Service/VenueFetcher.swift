@@ -37,6 +37,7 @@ public class VenueFetcher: ObservableObject {
             }
 
             guard let httpResponse = response as? HTTPURLResponse,
+                httpResponse.url == url,
                 (200..<300).contains(httpResponse.statusCode),
                 self.isJSONResponse(httpResponse),
                 httpResponse.expectedContentLength < 0 ||
