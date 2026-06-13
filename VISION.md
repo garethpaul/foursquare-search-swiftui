@@ -41,6 +41,8 @@ Current baseline:
 - Empty image response bodies are ignored before image data is published.
 - Remote image responses require an explicit `image/*` media type before
   temporary-file reads.
+- Remote image responses must retain exact request URL provenance before status,
+  media, size, file, or decode processing.
 - Remote image payloads use temporary-file downloads and are bounded to 5 MiB
   by response metadata and actual file size before entering app memory.
 - Venue search payloads use temporary-file downloads and are bounded to 2 MiB

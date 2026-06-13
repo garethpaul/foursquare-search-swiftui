@@ -1,7 +1,7 @@
 ---
 title: Image Final URL Boundary
 type: security
-status: planned
+status: completed
 date: 2026-06-13
 ---
 
@@ -35,3 +35,22 @@ validated HTTPS request URL before reading the downloaded file.
 - Installing a custom URLSession redirect delegate.
 - Changing image decoding, caching, rendering, or payload limits.
 - Changing venue search, project metadata, dependencies, or CI.
+
+## Work Completed
+
+- Required the final HTTP response URL to equal the validated image request URL.
+- Kept provenance validation ahead of status, media, size, temporary-file, and
+  data processing.
+- Added static, documentation, completion, and mutation contracts.
+
+## Verification Completed
+
+- The five hostile mutations were rejected: guard removal, host-only matching,
+  validation ordering drift, stale plan status, and missing evidence.
+- The all four Make gates passed result was confirmed against the final tree.
+- Shell syntax, plist/workspace parsing, `git diff --check`, artifact, protected
+  path, and secret scans are included in final verification.
+- `xcodebuild was unavailable` on this Linux host, so no Swift build, simulator,
+  or device execution was attempted.
+- No live image request or CDN redirect was exercised; redirect prevention is
+  not claimed.

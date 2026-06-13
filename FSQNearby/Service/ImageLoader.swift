@@ -41,6 +41,7 @@ class ImageLoader: ObservableObject {
             guard let self = self else { return }
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
+                httpResponse.url == url,
                 (200..<300).contains(httpResponse.statusCode),
                 self.isImageResponse(httpResponse),
                 httpResponse.expectedContentLength < 0 ||

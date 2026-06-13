@@ -2,6 +2,7 @@
 
 ## 2026-06-13
 
+- Required exact final image response URLs before response and file processing.
 - Required the exact final venue response URL to match the configured request
   before status, media, size, file, or decode processing.
 - Added provenance ordering, single-request, generic-error, documentation, and
