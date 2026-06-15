@@ -2,6 +2,8 @@
 
 ## 2026-06-15
 
+- Refused redirects in the dedicated image session before an unreviewed target
+  can receive a second request.
 - SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Refused redirects in the dedicated venue session before configured query data
   can be forwarded to another destination.

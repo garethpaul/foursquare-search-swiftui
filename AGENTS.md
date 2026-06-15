@@ -50,7 +50,8 @@
 - Remote image responses should require an `image/*` Content-Type before
   temporary-file metadata or bytes are read.
 - Keep exact final image response URL validation ahead of status, media, size,
-  file, and decode processing; do not describe it as redirect prevention.
+  file, and decode processing, and keep the dedicated image session configured
+  to refuse redirects before an unreviewed target can receive a second request.
 - Keep exact final venue response URL validation ahead of status, media, size,
   file, and decode processing, and keep the dedicated venue session configured
   to refuse redirects before private query data can be forwarded.

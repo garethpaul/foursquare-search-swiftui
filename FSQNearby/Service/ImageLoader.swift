@@ -9,8 +9,21 @@
 import Combine
 import Foundation
 
+private final class ImageRedirectRejectingDelegate: NSObject, URLSessionTaskDelegate {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        completionHandler(nil)
+    }
+}
+
 class ImageLoader: ObservableObject {
     private let maxImagePayloadBytes = 5 * 1024 * 1024
+    private let sessionDelegate: ImageRedirectRejectingDelegate
     private let imageSession: URLSession
     private var url: String = ""
     private var task: URLSessionDownloadTask?
@@ -23,10 +36,16 @@ class ImageLoader: ObservableObject {
     }
 
     init(urlString:String) {
+        let sessionDelegate = ImageRedirectRejectingDelegate()
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 15.0
         configuration.timeoutIntervalForResource = 30.0
-        self.imageSession = URLSession(configuration: configuration)
+        self.sessionDelegate = sessionDelegate
+        self.imageSession = URLSession(
+            configuration: configuration,
+            delegate: sessionDelegate,
+            delegateQueue: nil
+        )
         self.url = urlString
         load(urlString: url)
     }

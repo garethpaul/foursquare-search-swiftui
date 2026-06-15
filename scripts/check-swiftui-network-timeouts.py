@@ -37,10 +37,14 @@ if "URLSession.shared.downloadTask" in image:
 
 image_init = image.split("    init(urlString:String) {", 1)[1].split("\n    deinit", 1)[0]
 image_contracts = (
+    "let sessionDelegate = ImageRedirectRejectingDelegate()",
     "let configuration = URLSessionConfiguration.default",
     "configuration.timeoutIntervalForRequest = 15.0",
     "configuration.timeoutIntervalForResource = 30.0",
-    "self.imageSession = URLSession(configuration: configuration)",
+    "self.sessionDelegate = sessionDelegate",
+    "self.imageSession = URLSession(",
+    "configuration: configuration",
+    "delegate: sessionDelegate",
     "self.url = urlString",
     "load(urlString: url)",
 )

@@ -20,6 +20,7 @@ VENUE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-final-url
 IMAGE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-image-final-url-boundary.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 VENUE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-redirect-refusal.md"
+IMAGE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-image-redirect-refusal.md"
 NETWORK_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-swiftui-network-timeouts.md"
 NETWORK_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-swiftui-network-timeouts.py"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
@@ -62,6 +63,7 @@ for path in \
   "docs/plans/2026-06-13-image-final-url-boundary.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-15-foursquare-venue-redirect-refusal.md" \
+  "docs/plans/2026-06-15-foursquare-image-redirect-refusal.md" \
   "docs/plans/2026-06-15-swiftui-network-timeouts.md" \
   "scripts/check-swiftui-network-timeouts.py" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
@@ -231,6 +233,28 @@ import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
+redirect_contract = (
+    "private final class ImageRedirectRejectingDelegate: NSObject, URLSessionTaskDelegate",
+    "willPerformHTTPRedirection response: HTTPURLResponse",
+    "completionHandler: @escaping (URLRequest?) -> Void",
+    "completionHandler(nil)",
+    "private let sessionDelegate: ImageRedirectRejectingDelegate",
+    "private let imageSession: URLSession",
+    "let sessionDelegate = ImageRedirectRejectingDelegate()",
+    "let configuration = URLSessionConfiguration.default",
+    "self.sessionDelegate = sessionDelegate",
+    "self.imageSession = URLSession(",
+    "configuration: configuration",
+    "delegate: sessionDelegate",
+    "imageSession.invalidateAndCancel()",
+)
+if any(source.count(item) != 1 for item in redirect_contract):
+    raise SystemExit("ImageLoader must retain one configured session that refuses redirects.")
+if source.count("imageSession.downloadTask(with: url)") != 1:
+    raise SystemExit("ImageLoader must retain one configured redirect-refusing download request.")
+if source.count("httpResponse.url == url") != 1:
+    raise SystemExit("Image responses must retain the exact final URL guard.")
+
 load = source.split("private func load", 1)[-1].split("private func isImageResponse", 1)[0]
 required = (
     "imageSession.downloadTask(with: url)",
@@ -547,6 +571,15 @@ if ! grep -Fq "dedicated venue session refuses redirects" "$ROOT_DIR/README.md" 
   exit 1
 fi
 
+if ! grep -Fq "dedicated image session refuses redirects" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "dedicated image session must refuse redirects" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "dedicated image session refuses redirects" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Refused redirects in the dedicated image session" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "dedicated image session configured" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must document image redirect refusal." >&2
+  exit 1
+fi
+
 python3 - "$VENUE_FINAL_URL_PLAN" <<'PY'
 import re
 import sys
@@ -599,6 +632,34 @@ if (
     or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
 ):
     raise SystemExit("Venue redirect refusal plan must remain completed with actual verification recorded.")
+PY
+
+python3 - "$IMAGE_REDIRECT_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "delegate removal mutation failed",
+    "redirect acceptance mutation failed",
+    "delegate retention mutation failed",
+    "default session mutation failed",
+    "duplicate request mutation failed",
+    "final URL guard mutation failed",
+    "guidance mutation failed",
+    "plan evidence mutation failed",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit("Image redirect refusal plan must remain completed with actual verification recorded.")
 PY
 
 python3 - "$IMAGE_FINAL_URL_PLAN" <<'PY'

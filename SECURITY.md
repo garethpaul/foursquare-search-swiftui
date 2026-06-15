@@ -54,7 +54,8 @@ views.
 Remote image responses should declare an `image/*` media type before temporary
 file attributes or bytes are read.
 Their exact final URL should match the validated image request before response
-processing; this rejects redirected results after transport, not redirects.
+processing. The dedicated image session must refuse redirects before a second
+request is sent to an unreviewed destination.
 Remote image responses should use temporary-file downloads and be rejected
 above 5 MiB using both response length metadata and actual file size before
 loading them into app memory.

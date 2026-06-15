@@ -1,7 +1,7 @@
 ---
 title: Foursquare Image Redirect Refusal
 date: 2026-06-15
-status: in_progress
+status: completed
 execution: static-contract
 ---
 
@@ -80,7 +80,34 @@ Files:
 - Do not claim Xcode, simulator/device, signing, or live CDN validation from
   this Linux host.
 
-## Work Pending
+## Work Completed
 
-- Implement the retained image redirect-refusal delegate.
-- Add contracts, synchronized guidance, and actual verification evidence.
+- Added a retained image-specific `URLSessionTaskDelegate` that refuses every
+  HTTP redirect by passing `nil` to the completion handler.
+- Constructed the bounded image session with the retained delegate while
+  preserving one download task and cancellation-before-invalidation teardown.
+- Preserved exact final URL, 2xx, image media type, declared/file/decoded size,
+  non-empty, weak-capture, and main-queue publication guards.
+- Added static, timeout-ordering, guidance, mutation, and completed-plan
+  contracts.
+
+## Verification Completed
+
+- All four Make gates and the absolute-Makefile check passed; each reported
+  that `xcodebuild` is unavailable on this Linux host rather than claiming an
+  Apple-platform build.
+- The delegate removal mutation failed the retained redirect-policy contract.
+- The redirect acceptance mutation failed after forwarding the new request.
+- The delegate retention mutation failed after removing loader ownership.
+- The default session mutation failed the delegate-backed timeout contract.
+- The duplicate request mutation failed the existing single-task lifecycle
+  contract.
+- The final URL guard mutation failed the exact response provenance contract.
+- The guidance mutation failed the maintained redirect-refusal contract.
+- The plan evidence mutation failed the completed-evidence contract.
+- Shell syntax, checker compilation, `git diff --check`, artifact, protected
+  binary, mode, and changed-line credential audits passed before delivery.
+- No live image request, CDN redirect, simulator, device, or signed build was
+  exercised.
+
+## Status: Completed

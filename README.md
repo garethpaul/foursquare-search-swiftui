@@ -120,6 +120,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   reads.
 - Require the exact final image response URL to match the validated request
   before status, media, size, file, or decode processing.
+- The dedicated image session refuses redirects before an unreviewed target can
+  receive a second request.
 - Require the exact final venue response URL to match the configured request
   before status, media, size, file, or decode processing. The dedicated venue session refuses redirects before private query data can be
   forwarded.
