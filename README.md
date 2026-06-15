@@ -120,8 +120,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - Require the exact final image response URL to match the validated request
   before status, media, size, file, or decode processing.
 - Require the exact final venue response URL to match the configured request
-  before status, media, size, file, or decode processing. This rejects redirected
-  results but does not prevent URLSession from following the redirect.
+  before status, media, size, file, or decode processing. The dedicated venue session refuses redirects before private query data can be
+  forwarded.
 - Undecodable image payloads should not replace the current SwiftUI icon with a
   blank image.
 

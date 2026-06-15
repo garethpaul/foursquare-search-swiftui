@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-15
+
+- Refused redirects in the dedicated venue session before configured query data
+  can be forwarded to another destination.
+- Added delegate, session-routing, lifecycle, documentation, mutation, and
+  completed-evidence contracts.
+
 ## 2026-06-13
 
 - Made static verification independent of the caller's working directory by

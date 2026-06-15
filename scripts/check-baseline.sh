@@ -19,6 +19,7 @@ IMAGE_CONTENT_TYPE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-image-conten
 VENUE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md"
 IMAGE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-image-final-url-boundary.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
+VENUE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-redirect-refusal.md"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -58,6 +59,7 @@ for path in \
   "docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md" \
   "docs/plans/2026-06-13-image-final-url-boundary.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
+  "docs/plans/2026-06-15-foursquare-venue-redirect-refusal.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -128,6 +130,7 @@ if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq "private var task: URLSessionDownloadTask?" "$venue" ||
   ! grep -Fq "deinit" "$venue" ||
   ! grep -Fq "task?.cancel()" "$venue" ||
+  ! grep -Fq "venueSession.invalidateAndCancel()" "$venue" ||
   ! grep -Fq "task?.resume()" "$venue" ||
   ! grep -Fq "private let maxVenuePayloadBytes = 2 * 1024 * 1024" "$venue" ||
   ! grep -Fq "httpResponse.expectedContentLength < 0" "$venue" ||
@@ -137,7 +140,7 @@ if ! grep -Fq "venueSearchURL" "$venue" ||
   ! grep -Fq "let data = try? Data(contentsOf: location)" "$venue" ||
   ! grep -Fq "!data.isEmpty" "$venue" ||
   ! grep -Fq "data.count <= self.maxVenuePayloadBytes" "$venue" ||
-  grep -Fq "URLSession.shared.dataTask" "$venue" ||
+  grep -Fq "URLSession.shared" "$venue" ||
   grep -Fq 'URL(string: "FOURSQUARE_VENUE_SEARCH")!' "$venue" ||
   grep -Eq 'responseData\?\.(venues)\)!|URL\(string:.*\)!|print\(' "$venue"; then
   printf '%s\n' "VenueFetcher must use local HTTPS host configuration, retain request tasks, and avoid force unwraps or print diagnostics." >&2
@@ -149,8 +152,24 @@ import sys
 from pathlib import Path
 
 source = Path(sys.argv[1]).read_text()
-if source.count("URLSession.shared.downloadTask(with: url)") != 1:
-    raise SystemExit("VenueFetcher must retain one configured download request.")
+redirect_contract = (
+    "private final class VenueRedirectRejectingDelegate: NSObject, URLSessionTaskDelegate",
+    "willPerformHTTPRedirection response: HTTPURLResponse",
+    "completionHandler: @escaping (URLRequest?) -> Void",
+    "completionHandler(nil)",
+    "private let sessionDelegate: VenueRedirectRejectingDelegate",
+    "private let venueSession: URLSession",
+    "let sessionDelegate = VenueRedirectRejectingDelegate()",
+    "self.sessionDelegate = sessionDelegate",
+    "self.venueSession = URLSession(",
+    "configuration: .default",
+    "delegate: sessionDelegate",
+    "venueSession.invalidateAndCancel()",
+)
+if any(source.count(item) != 1 for item in redirect_contract):
+    raise SystemExit("VenueFetcher must retain one default session that refuses redirects.")
+if source.count("venueSession.downloadTask(with: url)") != 1:
+    raise SystemExit("VenueFetcher must retain one configured redirect-refusing download request.")
 if source.count("httpResponse.url == url") != 1:
     raise SystemExit("Venue responses must match the exact configured request URL.")
 if source.count('self.setError("Venue search returned no data.")') != 1:
@@ -491,6 +510,15 @@ if ! grep -Fq "exact final venue response URL" "$ROOT_DIR/README.md" || \
   exit 1
 fi
 
+if ! grep -Fq "dedicated venue session refuses redirects" "$ROOT_DIR/README.md" ||
+  ! grep -Fq "dedicated venue session must refuse redirects" "$ROOT_DIR/SECURITY.md" ||
+  ! grep -Fq "dedicated venue session refuses redirects" "$ROOT_DIR/VISION.md" ||
+  ! grep -Fq "Refused redirects in the dedicated venue session" "$ROOT_DIR/CHANGES.md" ||
+  ! grep -Fq "dedicated venue session configured" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must document venue redirect refusal." >&2
+  exit 1
+fi
+
 python3 - "$VENUE_FINAL_URL_PLAN" <<'PY'
 import re
 import sys
@@ -516,6 +544,33 @@ if (
     or re.search(r"\b(?:pending|todo|tbd|not run)\b", verification, re.IGNORECASE)
 ):
     raise SystemExit("Venue final URL plan must remain completed with actual verification recorded.")
+PY
+
+python3 - "$VENUE_REDIRECT_PLAN" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+plan = Path(sys.argv[1]).read_text()
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required = (
+    "delegate removal mutation failed",
+    "redirect acceptance mutation failed",
+    "shared session mutation failed",
+    "duplicate request mutation failed",
+    "final URL guard mutation failed",
+    "plan evidence mutation failed",
+    "hosted pull-request check",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit("Venue redirect refusal plan must remain completed with actual verification recorded.")
 PY
 
 python3 - "$IMAGE_FINAL_URL_PLAN" <<'PY'

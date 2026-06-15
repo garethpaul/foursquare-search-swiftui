@@ -46,8 +46,8 @@ oversized JSON bodies before decoding; the maintained limit is 2 MiB using
 declared and actual file sizes. They must also declare an explicit JSON media type
 before the downloaded file is read.
 The exact final venue response URL must match the configured request before
-response processing. This validation rejects redirected results after transport;
-it does not prevent URLSession from following redirects.
+response processing. The dedicated venue session must refuse redirects before a
+redirect destination can receive private configured query data.
 Empty image response bodies should be ignored before publishing image data to
 views.
 Remote image responses should declare an `image/*` media type before temporary

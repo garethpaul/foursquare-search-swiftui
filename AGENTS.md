@@ -51,7 +51,8 @@
 - Keep exact final image response URL validation ahead of status, media, size,
   file, and decode processing; do not describe it as redirect prevention.
 - Keep exact final venue response URL validation ahead of status, media, size,
-  file, and decode processing; do not describe it as redirect prevention.
+  file, and decode processing, and keep the dedicated venue session configured
+  to refuse redirects before private query data can be forwarded.
 
 ## Agent workflow
 

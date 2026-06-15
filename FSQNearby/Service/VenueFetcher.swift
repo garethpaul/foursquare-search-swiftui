@@ -8,18 +8,40 @@
 
 import Foundation
 
+private final class VenueRedirectRejectingDelegate: NSObject, URLSessionTaskDelegate {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        completionHandler(nil)
+    }
+}
+
 public class VenueFetcher: ObservableObject {
     private let maxVenuePayloadBytes = 2 * 1024 * 1024
+    private let sessionDelegate: VenueRedirectRejectingDelegate
+    private let venueSession: URLSession
     @Published var venues = [Venue]()
     @Published var errorMessage: String?
     private var task: URLSessionDownloadTask?
     
     init() {
+        let sessionDelegate = VenueRedirectRejectingDelegate()
+        self.sessionDelegate = sessionDelegate
+        self.venueSession = URLSession(
+            configuration: .default,
+            delegate: sessionDelegate,
+            delegateQueue: nil
+        )
         load()
     }
 
     deinit {
         task?.cancel()
+        venueSession.invalidateAndCancel()
     }
     
     private func load() {
@@ -28,7 +50,7 @@ public class VenueFetcher: ObservableObject {
             return
         }
 
-        task = URLSession.shared.downloadTask(with: url) { [weak self] location, response, error in
+        task = venueSession.downloadTask(with: url) { [weak self] location, response, error in
             guard let self = self else { return }
 
             if error != nil {

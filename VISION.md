@@ -51,6 +51,8 @@ Current baseline:
   visible error states.
 - The exact final venue response URL must match the configured request before
   response metadata or files are consumed.
+- The dedicated venue session refuses redirects before configured query data can
+  be forwarded to another destination.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
