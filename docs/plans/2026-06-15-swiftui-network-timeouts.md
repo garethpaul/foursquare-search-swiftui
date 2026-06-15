@@ -2,7 +2,7 @@
 title: SwiftUI Network Timeouts
 type: reliability
 date: 2026-06-15
-status: in_progress
+status: completed
 execution: code
 ---
 
@@ -88,4 +88,29 @@ Files:
 - Xcode, simulator/device, and live Foursquare/image endpoints remain outside
   Linux validation.
 
-## Status: In Progress
+## Work Completed
+
+- Configured 15-second request and 30-second resource timeouts on the dedicated
+  venue session before construction, preserving its redirect-rejecting delegate.
+- Replaced `URLSession.shared` image loading with an owned session using the
+  same bounds, routed downloads through it, and invalidated it after task
+  cancellation in `deinit`.
+- Added a scoped timeout/lifecycle checker, baseline integration, completed
+  plan contract, and synchronized project guidance.
+
+## Verification Completed
+
+- The focused SwiftUI network-timeout checker and shell syntax passed.
+- Repository and external-directory `make check`, plus `make lint`, `make test`,
+  and `make build`, passed the portable baseline; each truthfully reported that
+  `xcodebuild` is unavailable on Linux.
+- Ten isolated hostile mutations were rejected: venue request-timeout removal,
+  venue resource widening, venue default-session fallback, image request-timeout
+  removal, image resource widening, shared-session fallback, image invalidation
+  removal, timeout assignment after session construction, guidance removal, and
+  reopened plan completion evidence.
+- Exact diff, Xcode project, generated artifact, conflict marker, executable
+  mode, and changed-line secret audits passed before delivery.
+- No simulator, device, signed build, or live venue/image request was executed.
+
+## Status: Completed

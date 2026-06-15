@@ -44,6 +44,7 @@
 - Keep API credentials, private endpoints, query URLs with location data, `.xcconfig` files, and `.env` files out of source control.
 - Missing configuration, empty responses, and network failures should render a visible state instead of crashing or leaving a blank list.
 - Venue and image URLSession tasks should stay tied to their observable object lifecycles.
+- SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Image URLSession callbacks should use weak task captures before publishing downloaded data.
 - Image URL userinfo and fragments should be rejected before starting requests.
 - Remote image responses should require an `image/*` Content-Type before

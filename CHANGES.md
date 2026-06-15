@@ -2,6 +2,7 @@
 
 ## 2026-06-15
 
+- SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Refused redirects in the dedicated venue session before configured query data
   can be forwarded to another destination.
 - Added delegate, session-routing, lifecycle, documentation, mutation, and

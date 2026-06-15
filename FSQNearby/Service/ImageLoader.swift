@@ -11,6 +11,7 @@ import Foundation
 
 class ImageLoader: ObservableObject {
     private let maxImagePayloadBytes = 5 * 1024 * 1024
+    private let imageSession: URLSession
     private var url: String = ""
     private var task: URLSessionDownloadTask?
     var didChange = PassthroughSubject<Data, Never>()
@@ -22,12 +23,17 @@ class ImageLoader: ObservableObject {
     }
 
     init(urlString:String) {
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15.0
+        configuration.timeoutIntervalForResource = 30.0
+        self.imageSession = URLSession(configuration: configuration)
         self.url = urlString
         load(urlString: url)
     }
 
     deinit {
         task?.cancel()
+        imageSession.invalidateAndCancel()
     }
     
     private func load(urlString:String) {
@@ -37,7 +43,7 @@ class ImageLoader: ObservableObject {
             url.user == nil,
             url.password == nil,
             url.fragment == nil else { return }
-        task = URLSession.shared.downloadTask(with: url) { [weak self] location, response, error in
+        task = imageSession.downloadTask(with: url) { [weak self] location, response, error in
             guard let self = self else { return }
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,

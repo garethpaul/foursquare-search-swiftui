@@ -53,6 +53,7 @@ Current baseline:
   response metadata or files are consumed.
 - The dedicated venue session refuses redirects before configured query data can
   be forwarded to another destination.
+- SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are

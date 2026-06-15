@@ -30,9 +30,12 @@ public class VenueFetcher: ObservableObject {
     
     init() {
         let sessionDelegate = VenueRedirectRejectingDelegate()
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15.0
+        configuration.timeoutIntervalForResource = 30.0
         self.sessionDelegate = sessionDelegate
         self.venueSession = URLSession(
-            configuration: .default,
+            configuration: configuration,
             delegate: sessionDelegate,
             delegateQueue: nil
         )

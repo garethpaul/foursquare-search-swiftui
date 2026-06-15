@@ -48,6 +48,7 @@ before the downloaded file is read.
 The exact final venue response URL must match the configured request before
 response processing. The dedicated venue session must refuse redirects before a
 redirect destination can receive private configured query data.
+SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 Empty image response bodies should be ignored before publishing image data to
 views.
 Remote image responses should declare an `image/*` media type before temporary

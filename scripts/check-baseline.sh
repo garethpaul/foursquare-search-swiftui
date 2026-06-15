@@ -20,6 +20,8 @@ VENUE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-foursquare-venue-final-url
 IMAGE_FINAL_URL_PLAN="$ROOT_DIR/docs/plans/2026-06-13-image-final-url-boundary.md"
 LOCATION_INDEPENDENT_MAKE_PLAN="$ROOT_DIR/docs/plans/2026-06-13-location-independent-make.md"
 VENUE_REDIRECT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-foursquare-venue-redirect-refusal.md"
+NETWORK_TIMEOUT_PLAN="$ROOT_DIR/docs/plans/2026-06-15-swiftui-network-timeouts.md"
+NETWORK_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-swiftui-network-timeouts.py"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
@@ -60,6 +62,8 @@ for path in \
   "docs/plans/2026-06-13-image-final-url-boundary.md" \
   "docs/plans/2026-06-13-location-independent-make.md" \
   "docs/plans/2026-06-15-foursquare-venue-redirect-refusal.md" \
+  "docs/plans/2026-06-15-swiftui-network-timeouts.md" \
+  "scripts/check-swiftui-network-timeouts.py" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -71,6 +75,29 @@ for path in \
   ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
+done
+
+python3 "$NETWORK_TIMEOUT_CHECK" \
+  "$ROOT_DIR/FSQNearby/Service/VenueFetcher.swift" \
+  "$ROOT_DIR/FSQNearby/Service/ImageLoader.swift"
+
+for network_timeout_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! grep -Fq "SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts." "$ROOT_DIR/$network_timeout_doc"; then
+    printf '%s\n' "$network_timeout_doc must document bounded SwiftUI network timeouts." >&2
+    exit 1
+  fi
+done
+
+for network_timeout_plan_contract in \
+  "status: completed" \
+  "## Status: Completed" \
+  "## Work Completed" \
+  "## Verification Completed" \
+  "hostile mutations were rejected"; do
+  if ! grep -Fq "$network_timeout_plan_contract" "$NETWORK_TIMEOUT_PLAN"; then
+    printf '%s\n' "SwiftUI timeout plan must record completed evidence: $network_timeout_plan_contract" >&2
+    exit 1
+  fi
 done
 
 if ! grep -Fq 'ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))' "$ROOT_DIR/Makefile" ||
@@ -160,14 +187,15 @@ redirect_contract = (
     "private let sessionDelegate: VenueRedirectRejectingDelegate",
     "private let venueSession: URLSession",
     "let sessionDelegate = VenueRedirectRejectingDelegate()",
+    "let configuration = URLSessionConfiguration.default",
     "self.sessionDelegate = sessionDelegate",
     "self.venueSession = URLSession(",
-    "configuration: .default",
+    "configuration: configuration",
     "delegate: sessionDelegate",
     "venueSession.invalidateAndCancel()",
 )
 if any(source.count(item) != 1 for item in redirect_contract):
-    raise SystemExit("VenueFetcher must retain one default session that refuses redirects.")
+    raise SystemExit("VenueFetcher must retain one configured session that refuses redirects.")
 if source.count("venueSession.downloadTask(with: url)") != 1:
     raise SystemExit("VenueFetcher must retain one configured redirect-refusing download request.")
 if source.count("httpResponse.url == url") != 1:
@@ -205,7 +233,7 @@ from pathlib import Path
 source = Path(sys.argv[1]).read_text()
 load = source.split("private func load", 1)[-1].split("private func isImageResponse", 1)[0]
 required = (
-    "URLSession.shared.downloadTask(with: url)",
+    "imageSession.downloadTask(with: url)",
     "let httpResponse = response as? HTTPURLResponse",
     "httpResponse.url == url",
     "(200..<300).contains(httpResponse.statusCode)",
