@@ -47,4 +47,6 @@ behavior, simulator interaction, or device behavior changes in this patch.
   evidence.
 - Exact-diff, generated-artifact, credential-pattern, and whitespace audits
   passed.
-- Exact-head hosted push and pull-request builds are required before closure.
+- Exact-head hosted push and pull-request builds passed on implementation head
+  `141f211ddf9839d37c4a868a7718cf758ade54c1`: push run `27639736142` and
+  pull-request run `27639743099` both completed successfully on macOS 15.

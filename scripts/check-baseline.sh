@@ -434,7 +434,9 @@ if ! grep -Fq "status: completed" "$HOSTED_BUILD_PLAN" || \
    ! grep -Fq "repository and external-directory make check passed" "$HOSTED_BUILD_PLAN" || \
    ! grep -Fq "hostile hosted-build mutations were rejected" "$HOSTED_BUILD_PLAN" || \
    ! grep -Fq "xcodebuild is unavailable on Linux" "$HOSTED_BUILD_PLAN" || \
-   ! grep -Fq "hosted push and pull-request builds are required before closure" "$HOSTED_BUILD_PLAN"; then
+   ! grep -Fq "hosted push and pull-request builds passed" "$HOSTED_BUILD_PLAN" || \
+   ! grep -Fq "27639736142" "$HOSTED_BUILD_PLAN" || \
+   ! grep -Fq "27639743099" "$HOSTED_BUILD_PLAN"; then
   printf '%s\n' "Hosted simulator build plan must record completed local and hosted evidence." >&2
   exit 1
 fi
