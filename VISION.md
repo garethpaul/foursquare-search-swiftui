@@ -1,5 +1,7 @@
 ## Foursquare Search SwiftUI Vision
 
+Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+
 This document explains the current state and direction of the project.
 Project overview and developer docs: [`README.md`](README.md)
 

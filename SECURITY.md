@@ -1,5 +1,7 @@
 # Security Policy
 
+Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+
 ## Supported Versions
 
 The supported security scope for `foursquare-search-swiftui` is the current default branch, `master`. Older commits, tags, branches, forks, demos, and generated artifacts are not actively supported unless the repository explicitly marks them as maintained.

@@ -43,6 +43,7 @@
 - `FOURSQUARE_VENUE_SEARCH_URL` supplies the venue-search endpoint.
 - Keep API credentials, private endpoints, query URLs with location data, `.xcconfig` files, and `.env` files out of source control.
 - Missing configuration, empty responses, and network failures should render a visible state instead of crashing or leaving a blank list.
+- Hosted simulator builds compile all thirteen Swift sources with signing disabled.
 - Venue and image URLSession tasks should stay tied to their observable object lifecycles.
 - SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Image URLSession callbacks should use weak task captures before publishing downloaded data.

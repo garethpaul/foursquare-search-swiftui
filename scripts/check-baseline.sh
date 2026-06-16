@@ -26,6 +26,7 @@ NETWORK_TIMEOUT_CHECK="$ROOT_DIR/scripts/check-swiftui-network-timeouts.py"
 CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
+HOSTED_BUILD_PLAN="$ROOT_DIR/docs/plans/2026-06-16-hosted-simulator-build.md"
 
 require_file() {
   path=$1
@@ -74,6 +75,7 @@ for path in \
   "docs/plans/2026-06-09-foursquare-swiftui-url-host-validation.md" \
   "docs/plans/2026-06-10-ci-baseline.md" \
   "docs/plans/2026-06-12-checkout-credential-boundary.md" \
+  "docs/plans/2026-06-16-hosted-simulator-build.md" \
   ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
@@ -402,10 +404,85 @@ if ! grep -Fq "*.xcconfig" "$ROOT_DIR/.gitignore" ||
 fi
 
 if command -v xcodebuild >/dev/null 2>&1; then
+  build_root=$(mktemp -d "${TMPDIR:-/tmp}/fsqnearby-build.XXXXXX")
+  cleanup_build_root() {
+    if [ -n "${build_root:-}" ] && [ -d "$build_root" ]; then
+      rm -rf -- "$build_root"
+    fi
+  }
+  trap cleanup_build_root 0 1 2 15
   xcodebuild -list -project "$ROOT_DIR/FSQNearby.xcodeproj"
+  xcodebuild \
+    -project "$ROOT_DIR/FSQNearby.xcodeproj" \
+    -target FSQNearby \
+    -sdk iphonesimulator \
+    -configuration Debug \
+    CODE_SIGNING_ALLOWED=NO \
+    CODE_SIGNING_REQUIRED=NO \
+    ONLY_ACTIVE_ARCH=NO \
+    SYMROOT="$build_root/products" \
+    OBJROOT="$build_root/intermediates" \
+    build
+  cleanup_build_root
+  build_root=
+  trap - 0 1 2 15
 else
-  printf '%s\n' "Skipping xcodebuild project listing: xcodebuild is not installed."
+  printf '%s\n' "Skipping xcodebuild project listing and simulator build: xcodebuild is not installed."
 fi
+
+if ! grep -Fq "status: completed" "$HOSTED_BUILD_PLAN" || \
+   ! grep -Fq "repository and external-directory make check passed" "$HOSTED_BUILD_PLAN" || \
+   ! grep -Fq "hostile hosted-build mutations were rejected" "$HOSTED_BUILD_PLAN" || \
+   ! grep -Fq "xcodebuild is unavailable on Linux" "$HOSTED_BUILD_PLAN" || \
+   ! grep -Fq "hosted push and pull-request builds are required before closure" "$HOSTED_BUILD_PLAN"; then
+  printf '%s\n' "Hosted simulator build plan must record completed local and hosted evidence." >&2
+  exit 1
+fi
+
+for hosted_build_contract in \
+  'build_root=$(mktemp -d "${TMPDIR:-/tmp}/fsqnearby-build.XXXXXX")' \
+  'trap cleanup_build_root 0 1 2 15' \
+  '-target FSQNearby' \
+  '-sdk iphonesimulator' \
+  'CODE_SIGNING_ALLOWED=NO' \
+  'CODE_SIGNING_REQUIRED=NO' \
+  'SYMROOT="$build_root/products"' \
+  'OBJROOT="$build_root/intermediates"' \
+  'trap - 0 1 2 15'; do
+  if ! grep -Fq -- "$hosted_build_contract" "$ROOT_DIR/scripts/check-baseline.sh"; then
+    printf '%s\n' "Hosted simulator build contract is missing: $hosted_build_contract" >&2
+    exit 1
+  fi
+done
+
+if [ "$(grep -Ec '^  xcodebuild \\$' "$ROOT_DIR/scripts/check-baseline.sh")" -ne 1 ]; then
+  printf '%s\n' "Hosted simulator compilation must invoke exactly one multiline xcodebuild command." >&2
+  exit 1
+fi
+
+for counted_contract in \
+  '-target FSQNearby' \
+  '-sdk iphonesimulator' \
+  'CODE_SIGNING_ALLOWED=NO' \
+  'trap cleanup_build_root 0 1 2 15'; do
+  if [ "$(grep -Fc -- "$counted_contract" "$ROOT_DIR/scripts/check-baseline.sh")" -ne 3 ]; then
+    printf '%s\n' "Hosted simulator build contract must appear in implementation and guard: $counted_contract" >&2
+    exit 1
+  fi
+done
+
+if ! grep -Fq "Run baseline and compile Swift sources" "$CI_WORKFLOW" || \
+   ! grep -Fq "run: make check" "$CI_WORKFLOW"; then
+  printf '%s\n' "Canonical macOS CI must execute the hosted compile gate." >&2
+  exit 1
+fi
+
+for hosted_build_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
+  if ! grep -Fq "Hosted simulator builds compile all thirteen Swift sources with signing disabled." "$ROOT_DIR/$hosted_build_doc"; then
+    printf '%s\n' "$hosted_build_doc must document hosted simulator compilation." >&2
+    exit 1
+  fi
+done
 
 if ! grep -Fq "status: completed" "$PLAN"; then
   printf '%s\n' "Plan must be marked completed." >&2

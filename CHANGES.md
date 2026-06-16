@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-06-16
+
+- Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+
 ## 2026-06-15
 
 - Refused redirects in the dedicated image session before an unreviewed target
