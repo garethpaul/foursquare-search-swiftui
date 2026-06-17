@@ -799,17 +799,16 @@ if project.count("FoursquareEnvelopePolicy.swift in Sources") != 2 or project.co
 if "run-foursquare-envelope-policy-tests.sh" not in makefile:
     raise SystemExit("The canonical Make gate must execute the envelope policy harness.")
 required_plan = (
+    "status: completed",
     "Repository-root and external-directory `make check` passed",
     "Eight isolated mutations were rejected",
+    "Both exact-head push and pull-request checks passed",
+    "`92b1999679545b0cb4ace2ef28e3f49e6ffc7b21`",
+    "Push run `27674042876`",
+    "pull-request run `27674052161`",
     "no live Foursquare request was made",
 )
-if "status: pending_hosted_verification" in plan:
-    status_valid = "Exact-head hosted checks remain pending." in plan
-elif "status: completed" in plan:
-    status_valid = "Both exact-head push and pull-request checks passed." in plan
-else:
-    status_valid = False
-if not status_valid or any(item not in plan for item in required_plan):
+if any(item not in plan for item in required_plan):
     raise SystemExit("Foursquare envelope plan must record truthful local and hosted evidence.")
 PY
 

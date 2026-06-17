@@ -1,7 +1,7 @@
 ---
 title: Foursquare Envelope Status Validation
 type: security
-status: pending_hosted_verification
+status: completed
 date: 2026-06-17
 ---
 
@@ -103,4 +103,7 @@ wiring, maintained guidance, and plan status.
 The validation was offline and no live Foursquare request was made. No raw
 response body, request URL, or credential was logged or recorded.
 
-Exact-head hosted checks remain pending.
+Both exact-head push and pull-request checks passed at implementation commit
+`92b1999679545b0cb4ace2ef28e3f49e6ffc7b21`. Push run `27674042876` and
+pull-request run `27674052161` executed the production envelope policy and
+hosted simulator build successfully on macOS.
