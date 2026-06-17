@@ -22,6 +22,7 @@
 		C3D0B41623D52C4700443A98 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C3D0B41423D52C4700443A98 /* LaunchScreen.storyboard */; };
 		C3D0B41F23D52CA600443A98 /* FoursquareSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D0B41E23D52CA600443A98 /* FoursquareSearch.swift */; };
 		C3D0B42423D52E3600443A98 /* VenueFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D0B42323D52E3600443A98 /* VenueFetcher.swift */; };
+		C3D0B43023D52E3600443A98 /* FoursquareEnvelopePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D0B42F23D52E3600443A98 /* FoursquareEnvelopePolicy.swift */; };
 		C3D0B42823D532BF00443A98 /* VenueListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D0B42723D532BF00443A98 /* VenueListView.swift */; };
 /* End PBXBuildFile section */
 
@@ -43,6 +44,7 @@
 		C3D0B41723D52C4700443A98 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C3D0B41E23D52CA600443A98 /* FoursquareSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoursquareSearch.swift; sourceTree = "<group>"; };
 		C3D0B42323D52E3600443A98 /* VenueFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VenueFetcher.swift; sourceTree = "<group>"; };
+		C3D0B42F23D52E3600443A98 /* FoursquareEnvelopePolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoursquareEnvelopePolicy.swift; sourceTree = "<group>"; };
 		C3D0B42723D532BF00443A98 /* VenueListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VenueListView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -110,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				C3D0B42323D52E3600443A98 /* VenueFetcher.swift */,
+				C3D0B42F23D52E3600443A98 /* FoursquareEnvelopePolicy.swift */,
 				C32E49E323D5400000C45C81 /* ImageLoader.swift */,
 			);
 			path = Service;
@@ -201,6 +204,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C3D0B42423D52E3600443A98 /* VenueFetcher.swift in Sources */,
+				C3D0B43023D52E3600443A98 /* FoursquareEnvelopePolicy.swift in Sources */,
 				C3D0B40A23D52C4300443A98 /* AppDelegate.swift in Sources */,
 				C3D0B41F23D52CA600443A98 /* FoursquareSearch.swift in Sources */,
 				C3D0B40C23D52C4300443A98 /* SceneDelegate.swift in Sources */,

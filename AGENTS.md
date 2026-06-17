@@ -56,6 +56,8 @@
 - Keep exact final venue response URL validation ahead of status, media, size,
   file, and decode processing, and keep the dedicated venue session configured
   to refuse redirects before private query data can be forwarded.
+- Require decoded Foursquare meta code 200 before publishing venue state, and
+  require a present response object.
 
 ## Agent workflow
 

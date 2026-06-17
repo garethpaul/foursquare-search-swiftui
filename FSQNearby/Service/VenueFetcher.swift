@@ -81,7 +81,14 @@ public class VenueFetcher: ObservableObject {
 
             do {
                 let foursquareSearch = try JSONDecoder().decode(FoursquareSearch.self, from: data)
-                let venues = foursquareSearch.response?.venues ?? []
+                guard FoursquareEnvelopePolicy.accepts(
+                    metaCode: foursquareSearch.meta?.code,
+                    hasResponse: foursquareSearch.response != nil
+                ), let response = foursquareSearch.response else {
+                    self.setError("Venue search returned an invalid response.")
+                    return
+                }
+                let venues = response.venues
                 DispatchQueue.main.async {
                     self.errorMessage = venues.isEmpty ? "No venues found." : nil
                     self.venues = venues

@@ -1,7 +1,7 @@
 ---
 title: Foursquare Envelope Status Validation
 type: security
-status: planned
+status: pending_hosted_verification
 date: 2026-06-17
 ---
 
@@ -85,4 +85,22 @@ ran.
 
 ## Verification Results
 
-Implementation and verification are pending.
+Implementation is complete. Venue publication now requires decoded meta code
+200 and a present response object, while a valid empty venue array retains the
+existing "No venues found" state. The production helper is a member of the app
+target and the standalone harness covers accepted, missing, client-error,
+server-error, and response-absent envelopes.
+
+Repository-root and external-directory `make check` passed on Linux. The gate
+truthfully skipped executable Swift tests and simulator compilation because
+`swiftc` and `xcodebuild` are unavailable; static policy, production
+delegation, project membership, Make wiring, and maintained guidance passed.
+
+Eight isolated mutations were rejected across policy status, response
+presence, production delegation, behavior cases, app-target membership, Make
+wiring, maintained guidance, and plan status.
+
+The validation was offline and no live Foursquare request was made. No raw
+response body, request URL, or credential was logged or recorded.
+
+Exact-head hosted checks remain pending.

@@ -27,6 +27,7 @@ CI_WORKFLOW="$ROOT_DIR/.github/workflows/check.yml"
 CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
 HOSTED_BUILD_PLAN="$ROOT_DIR/docs/plans/2026-06-16-hosted-simulator-build.md"
+ENVELOPE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-17-foursquare-envelope-status.md"
 
 require_file() {
   path=$1
@@ -46,6 +47,7 @@ for path in \
   "FSQNearby.xcodeproj/project.pbxproj" \
   "FSQNearby/Info.plist" \
   "FSQNearby/Service/VenueFetcher.swift" \
+  "FSQNearby/Service/FoursquareEnvelopePolicy.swift" \
   "FSQNearby/Service/ImageLoader.swift" \
   "FSQNearby/View/AddressView.swift" \
   "FSQNearby/View/CategoryIconView.swift" \
@@ -76,6 +78,9 @@ for path in \
   "docs/plans/2026-06-10-ci-baseline.md" \
   "docs/plans/2026-06-12-checkout-credential-boundary.md" \
   "docs/plans/2026-06-16-hosted-simulator-build.md" \
+  "docs/plans/2026-06-17-foursquare-envelope-status.md" \
+  "scripts/run-foursquare-envelope-policy-tests.sh" \
+  "Tests/FoursquareEnvelopePolicyTests/main.swift" \
   ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
@@ -758,6 +763,64 @@ required = (
 if statuses != ["status: completed"] or any(item not in plan for item in required):
     raise SystemExit("Image final URL plan must record completed local verification.")
 PY
+
+python3 - \
+  "$ROOT_DIR/FSQNearby/Service/FoursquareEnvelopePolicy.swift" \
+  "$ROOT_DIR/FSQNearby/Service/VenueFetcher.swift" \
+  "$ROOT_DIR/Tests/FoursquareEnvelopePolicyTests/main.swift" \
+  "$ROOT_DIR/FSQNearby.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$ENVELOPE_STATUS_PLAN" <<'PY'
+import sys
+from pathlib import Path
+
+policy = Path(sys.argv[1]).read_text()
+fetcher = Path(sys.argv[2]).read_text()
+tests = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+plan = " ".join(Path(sys.argv[6]).read_text().split())
+
+if "metaCode == 200 && hasResponse" not in policy:
+    raise SystemExit("Decoded Foursquare envelopes must require status 200 and a response object.")
+if "FoursquareEnvelopePolicy.accepts(" not in fetcher or "let response = foursquareSearch.response" not in fetcher:
+    raise SystemExit("Venue publication must delegate to the decoded-envelope policy.")
+for case in (
+    'metaCode: 200, hasResponse: true, accepted: true',
+    'metaCode: nil, hasResponse: true, accepted: false',
+    'metaCode: 400, hasResponse: true, accepted: false',
+    'metaCode: 500, hasResponse: true, accepted: false',
+    'metaCode: 200, hasResponse: false, accepted: false',
+):
+    if case not in tests:
+        raise SystemExit("Executable decoded-envelope cases must remain registered.")
+if project.count("FoursquareEnvelopePolicy.swift in Sources") != 2 or project.count("/* FoursquareEnvelopePolicy.swift */") != 3:
+    raise SystemExit("Foursquare envelope policy must remain a member of the app target.")
+if "run-foursquare-envelope-policy-tests.sh" not in makefile:
+    raise SystemExit("The canonical Make gate must execute the envelope policy harness.")
+required_plan = (
+    "Repository-root and external-directory `make check` passed",
+    "Eight isolated mutations were rejected",
+    "no live Foursquare request was made",
+)
+if "status: pending_hosted_verification" in plan:
+    status_valid = "Exact-head hosted checks remain pending." in plan
+elif "status: completed" in plan:
+    status_valid = "Both exact-head push and pull-request checks passed." in plan
+else:
+    status_valid = False
+if not status_valid or any(item not in plan for item in required_plan):
+    raise SystemExit("Foursquare envelope plan must record truthful local and hosted evidence.")
+PY
+
+if ! grep -Fq "decoded Foursquare envelope requires meta code 200" "$ROOT_DIR/README.md" || \
+  ! grep -Fq "decoded envelope must require meta code 200" "$ROOT_DIR/SECURITY.md" || \
+  ! grep -Fq "Require successful decoded Foursquare envelopes" "$ROOT_DIR/VISION.md" || \
+  ! grep -Fq "Required successful decoded Foursquare envelopes" "$ROOT_DIR/CHANGES.md" || \
+  ! grep -Fq "Require decoded Foursquare meta code 200" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must preserve decoded Foursquare envelope validation." >&2
+  exit 1
+fi
 
 if ! grep -Fq "exact final image response URL" "$ROOT_DIR/README.md" ||
   ! grep -Fq "exact final URL should match" "$ROOT_DIR/SECURITY.md" ||

@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Required successful decoded Foursquare envelopes before publishing venue
+  state and added an executable production-policy harness.
+
 ## 2026-06-16
 
 - Hosted simulator builds compile all thirteen Swift sources with signing disabled.

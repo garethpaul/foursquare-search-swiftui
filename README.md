@@ -81,7 +81,9 @@ and cancelled when fetchers are deallocated. Venue endpoint parsing rejects
 embedded userinfo and fragments before starting a request. Venue search JSON is
 downloaded to a temporary file and rejected when its declared or actual body
 exceeds 2 MiB or lacks an explicit JSON Content-Type; empty bodies use the
-existing visible error state. Image request
+existing visible error state. A decoded Foursquare envelope requires meta code 200
+and a present response object before venue state is published; valid empty
+venue arrays still use the normal "No venues found" state. Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing

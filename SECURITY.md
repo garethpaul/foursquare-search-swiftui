@@ -47,6 +47,8 @@ Venue search responses should use temporary-file downloads and reject empty or
 oversized JSON bodies before decoding; the maintained limit is 2 MiB using
 declared and actual file sizes. They must also declare an explicit JSON media type
 before the downloaded file is read.
+A decoded envelope must require meta code 200 before venue state is published,
+and it must include a response object.
 The exact final venue response URL must match the configured request before
 response processing. The dedicated venue session must refuse redirects before a
 redirect destination can receive private configured query data.

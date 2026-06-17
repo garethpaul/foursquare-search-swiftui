@@ -53,6 +53,8 @@ Current baseline:
   by response metadata and actual file size before decoding; explicit JSON media types
   are required before file reads, and empty responses remain
   visible error states.
+- Require successful decoded Foursquare envelopes before publishing venue
+  state while preserving valid empty venue arrays.
 - The exact final venue response URL must match the configured request before
   response metadata or files are consumed.
 - The dedicated venue session refuses redirects before configured query data can
