@@ -887,23 +887,23 @@ if makefile.count("run-foursquare-venue-text-tests.sh") != 1:
     raise SystemExit("The canonical Make gate must execute the venue text harness once.")
 frontmatter = plan.split("---", 2)[1]
 statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
-if statuses not in (["status: implemented"], ["status: completed"]):
-    raise SystemExit("Venue text plan must record implemented or completed status.")
-if "Repository-root and external-directory `make check` passed" not in plan:
-    raise SystemExit("Venue text plan must record local verification.")
-if statuses == ["status: completed"]:
-    verification = plan.split("## Verification Completed\n", 1)[-1]
-    required_plan = (
-        "isolated mutations were rejected",
-        "Both exact-head push and pull-request checks passed",
-        "no live Foursquare request was made",
-    )
-    if (
-        "## Verification Completed\n" not in plan
-        or any(item not in verification for item in required_plan)
-        or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
-    ):
-        raise SystemExit("Completed venue text plan must record local and hosted verification.")
+verification = plan.split("## Verification Completed\n", 1)[-1]
+required_plan = (
+    "Repository-root and external-directory `make check` passed",
+    "isolated mutations were rejected",
+    "Both exact-head push and pull-request checks passed",
+    "`8b17732daa3125d5bf373fb565881119b52889a0`",
+    "Push run `27739743924`",
+    "pull-request run `27739751280`",
+    "No live Foursquare request was made",
+)
+if (
+    statuses != ["status: completed"]
+    or "## Verification Completed\n" not in plan
+    or any(item not in verification for item in required_plan)
+    or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit("Venue text plan must record completed local and hosted verification.")
 PY
 
 if ! grep -Fq "blank venue names are rejected before publication" "$ROOT_DIR/README.md" || \

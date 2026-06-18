@@ -1,7 +1,7 @@
 ---
 title: Foursquare SwiftUI Venue Name Boundary
 type: bugfix
-status: implemented
+status: completed
 date: 2026-06-18
 execution: code
 ---
@@ -129,7 +129,7 @@ bounded exact-head hosted evidence.
 - Filtering can turn a nonempty decoded response into the existing empty state;
   this is intentional because every rejected venue lacks a usable primary label.
 
-## Implementation Verification
+## Verification Completed
 
 The production policy trims accepted venue names, rejects empty and
 whitespace-only names, preserves Unicode text, filters invalid venues before
@@ -147,6 +147,11 @@ Thirteen isolated mutations were rejected across normalization, required blank
 and Unicode cases, publication filtering, row rendering, runner source and
 mode, Xcode membership, Make wiring, guidance, plan status, and local evidence.
 
-The pushed macOS implementation checks remain the authority for executable
-Swift and simulator compilation. Exact run identifiers will be added before
-this plan is marked completed.
+Both exact-head push and pull-request checks passed at implementation head
+`8b17732daa3125d5bf373fb565881119b52889a0`. Push run `27739743924` and
+pull-request run `27739751280` executed the production venue-text harness,
+reported `FoursquareVenueTextPolicy behavioral tests passed`, completed the
+full transport baseline, and built the simulator target successfully.
+
+No live Foursquare request was made, and no credentials, private endpoint, or
+user location data were required.
