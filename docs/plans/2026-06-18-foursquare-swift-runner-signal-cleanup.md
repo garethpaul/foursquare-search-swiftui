@@ -1,0 +1,62 @@
+---
+title: Foursquare Swift Runner Signal Cleanup
+type: bugfix
+status: planned
+date: 2026-06-18
+execution: code
+---
+
+# Foursquare Swift Runner Signal Cleanup
+
+## Status
+
+Planned. Implementation and exact-head hosted verification are not yet complete.
+
+## Context
+
+The envelope-policy and venue-text Swift runners create unique temporary build
+directories and remove them through an exit trap. Their HUP, INT, and TERM
+handlers call `exit` directly, however, and POSIX `sh` does not guarantee that
+the exit trap runs when `exit` is invoked from another trap.
+
+Bounded process-group probes reproduced the failure for both runners: each
+returned status 143 after TERM and left its newly created build directory in
+`/tmp`. The leaked paths were removed explicitly after the probes.
+
+## Plan
+
+- Give both runners a signal handler that disables all traps, removes the
+  temporary build directory, and exits with the conventional signal status.
+- Preserve existing success cleanup and compiler or test failure propagation.
+- Extend the baseline checker with structured contracts for the handler body
+  and all HUP, INT, and TERM bindings in both runners.
+- Exercise success, compiler failure, and bounded TERM cleanup independently
+  for each runner with fake compilers.
+- Reject isolated mutations that remove cleanup or restore an exit-only signal
+  binding.
+- Run every maintained Make alias from the repository and `make check` through
+  the absolute Makefile path from an external directory.
+- Audit the exact diff, executable modes, generated artifacts, whitespace, and
+  credential-shaped additions before committing only intended paths.
+- Record exact implementation and completed-plan heads plus canonical push and
+  pull-request checks before marking this plan completed.
+
+## Risks
+
+- Signal handling differs among shells, so the implementation must remain
+  limited to POSIX syntax used by `/bin/sh` on Linux and macOS.
+- Linux cannot compile or run the Swift application in this environment;
+  canonical macOS checks remain authoritative for executable Swift coverage.
+- The pull request is stacked on the venue-name boundary and must retain its
+  intended base ordering.
+
+## Verification Required
+
+- `sh -n` for the baseline checker and both runners.
+- Focused fake-compiler success, failure-status, and TERM-cleanup probes for
+  both runners.
+- `make check`, `make lint`, `make test`, and `make build` from the repository.
+- Absolute-Makefile `make check` from `/tmp`.
+- Mutation, diff, mode, artifact, and credential-shaped addition audits.
+- Successful canonical push and pull-request checks on the exact implementation
+  head and on the final completed-plan evidence head.

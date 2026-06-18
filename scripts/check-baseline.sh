@@ -29,6 +29,7 @@ CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-bo
 HOSTED_BUILD_PLAN="$ROOT_DIR/docs/plans/2026-06-16-hosted-simulator-build.md"
 ENVELOPE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-17-foursquare-envelope-status.md"
 VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swiftui-venue-name-boundary.md"
+SWIFT_RUNNER_SIGNAL_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md"
 
 require_file() {
   path=$1
@@ -82,6 +83,7 @@ for path in \
   "docs/plans/2026-06-16-hosted-simulator-build.md" \
   "docs/plans/2026-06-17-foursquare-envelope-status.md" \
   "docs/plans/2026-06-18-foursquare-swiftui-venue-name-boundary.md" \
+  "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
   "scripts/run-foursquare-envelope-policy-tests.sh" \
   "scripts/run-foursquare-venue-text-tests.sh" \
   "Tests/FoursquareEnvelopePolicyTests/main.swift" \
@@ -815,6 +817,49 @@ required_plan = (
 )
 if any(item not in plan for item in required_plan):
     raise SystemExit("Foursquare envelope plan must record truthful local and hosted evidence.")
+PY
+
+python3 - \
+  "$ROOT_DIR/scripts/run-foursquare-envelope-policy-tests.sh" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" \
+  "$SWIFT_RUNNER_SIGNAL_PLAN" <<'PY'
+import os
+import re
+import sys
+from pathlib import Path
+
+runners = [Path(path) for path in sys.argv[1:3]]
+plan = Path(sys.argv[3]).read_text()
+
+handler = re.compile(
+    r"handle_signal\(\) \{\n"
+    r"    status=\$1\n"
+    r"    trap - 0 1 2 15\n"
+    r"    cleanup\n"
+    r"    exit \"\$status\"\n"
+    r"\}"
+)
+bindings = (
+    "trap 'handle_signal 129' 1",
+    "trap 'handle_signal 130' 2",
+    "trap 'handle_signal 143' 15",
+)
+
+for runner in runners:
+    source = runner.read_text()
+    if not handler.search(source):
+        raise SystemExit(f"{runner.name} must clean its temporary directory before signal exit.")
+    if any(binding not in source for binding in bindings):
+        raise SystemExit(f"{runner.name} must bind HUP, INT, and TERM to the cleanup handler.")
+    if re.search(r"trap 'exit (?:129|130|143)'", source):
+        raise SystemExit(f"{runner.name} must not use exit-only signal traps.")
+    if not os.access(runner, os.X_OK):
+        raise SystemExit(f"{runner.name} must remain executable.")
+
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+if statuses != ["status: planned"] or "## Status\n\nPlanned." not in plan:
+    raise SystemExit("Swift runner signal cleanup plan must remain planned until hosted verification completes.")
 PY
 
 if ! grep -Fq "decoded Foursquare envelope requires meta code 200" "$ROOT_DIR/README.md" || \
