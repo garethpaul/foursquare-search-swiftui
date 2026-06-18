@@ -83,7 +83,9 @@ downloaded to a temporary file and rejected when its declared or actual body
 exceeds 2 MiB or lacks an explicit JSON Content-Type; empty bodies use the
 existing visible error state. A decoded Foursquare envelope requires meta code 200
 and a present response object before venue state is published; valid empty
-venue arrays still use the normal "No venues found" state. Image request
+venue arrays still use the normal "No venues found" state. Accepted venue
+names are trimmed, and blank venue names are rejected before publication.
+Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing
@@ -95,7 +97,7 @@ replacing the current icon with a blank image.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
-Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+Hosted simulator builds compile all fourteen Swift sources with signing disabled.
 
 ## Configuration and Secrets
 

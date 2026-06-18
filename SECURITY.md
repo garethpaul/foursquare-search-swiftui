@@ -1,6 +1,6 @@
 # Security Policy
 
-Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+Hosted simulator builds compile all fourteen Swift sources with signing disabled.
 
 ## Supported Versions
 
@@ -49,6 +49,8 @@ declared and actual file sizes. They must also declare an explicit JSON media ty
 before the downloaded file is read.
 A decoded envelope must require meta code 200 before venue state is published,
 and it must include a response object.
+Decoded blank venue names must be rejected before publication, and accepted
+names should be trimmed before display.
 The exact final venue response URL must match the configured request before
 response processing. The dedicated venue session must refuse redirects before a
 redirect destination can receive private configured query data.

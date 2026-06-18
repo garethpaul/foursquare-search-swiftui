@@ -88,7 +88,9 @@ public class VenueFetcher: ObservableObject {
                     self.setError("Venue search returned an invalid response.")
                     return
                 }
-                let venues = response.venues
+                let venues = response.venues.filter {
+                    FoursquareVenueTextPolicy.normalizedName($0.name) != nil
+                }
                 DispatchQueue.main.async {
                     self.errorMessage = venues.isEmpty ? "No venues found." : nil
                     self.venues = venues

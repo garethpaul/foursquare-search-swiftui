@@ -28,6 +28,7 @@ CI_PLAN="$ROOT_DIR/docs/plans/2026-06-10-ci-baseline.md"
 CHECKOUT_CREDENTIAL_PLAN="$ROOT_DIR/docs/plans/2026-06-12-checkout-credential-boundary.md"
 HOSTED_BUILD_PLAN="$ROOT_DIR/docs/plans/2026-06-16-hosted-simulator-build.md"
 ENVELOPE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-17-foursquare-envelope-status.md"
+VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swiftui-venue-name-boundary.md"
 
 require_file() {
   path=$1
@@ -48,6 +49,7 @@ for path in \
   "FSQNearby/Info.plist" \
   "FSQNearby/Service/VenueFetcher.swift" \
   "FSQNearby/Service/FoursquareEnvelopePolicy.swift" \
+  "FSQNearby/Service/FoursquareVenueTextPolicy.swift" \
   "FSQNearby/Service/ImageLoader.swift" \
   "FSQNearby/View/AddressView.swift" \
   "FSQNearby/View/CategoryIconView.swift" \
@@ -79,8 +81,11 @@ for path in \
   "docs/plans/2026-06-12-checkout-credential-boundary.md" \
   "docs/plans/2026-06-16-hosted-simulator-build.md" \
   "docs/plans/2026-06-17-foursquare-envelope-status.md" \
+  "docs/plans/2026-06-18-foursquare-swiftui-venue-name-boundary.md" \
   "scripts/run-foursquare-envelope-policy-tests.sh" \
+  "scripts/run-foursquare-venue-text-tests.sh" \
   "Tests/FoursquareEnvelopePolicyTests/main.swift" \
+  "Tests/FoursquareVenueTextPolicyTests/main.swift" \
   ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
@@ -485,7 +490,7 @@ if ! grep -Fq "Run baseline and compile Swift sources" "$CI_WORKFLOW" || \
 fi
 
 for hosted_build_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
-  if ! grep -Fq "Hosted simulator builds compile all thirteen Swift sources with signing disabled." "$ROOT_DIR/$hosted_build_doc"; then
+  if ! grep -Fq "Hosted simulator builds compile all fourteen Swift sources with signing disabled." "$ROOT_DIR/$hosted_build_doc"; then
     printf '%s\n' "$hosted_build_doc must document hosted simulator compilation." >&2
     exit 1
   fi
@@ -827,6 +832,86 @@ if ! grep -Fq "exact final image response URL" "$ROOT_DIR/README.md" ||
   ! grep -Fq "Required exact final image response URLs" "$ROOT_DIR/CHANGES.md" ||
   ! grep -Fq "exact final image response URL validation" "$ROOT_DIR/AGENTS.md"; then
   printf '%s\n' "Project docs must preserve image response provenance validation." >&2
+  exit 1
+fi
+
+python3 - \
+  "$ROOT_DIR/FSQNearby/Service/FoursquareVenueTextPolicy.swift" \
+  "$ROOT_DIR/FSQNearby/Service/VenueFetcher.swift" \
+  "$ROOT_DIR/FSQNearby/View/VenueItemView.swift" \
+  "$ROOT_DIR/Tests/FoursquareVenueTextPolicyTests/main.swift" \
+  "$ROOT_DIR/scripts/run-foursquare-venue-text-tests.sh" \
+  "$ROOT_DIR/FSQNearby.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" \
+  "$VENUE_TEXT_PLAN" <<'PY'
+import os
+import re
+import sys
+from pathlib import Path
+
+policy = Path(sys.argv[1]).read_text()
+fetcher = Path(sys.argv[2]).read_text()
+view = Path(sys.argv[3]).read_text()
+tests = Path(sys.argv[4]).read_text()
+runner = Path(sys.argv[5]).read_text()
+project = Path(sys.argv[6]).read_text()
+makefile = Path(sys.argv[7]).read_text()
+plan = Path(sys.argv[8]).read_text()
+
+if "trimmingCharacters(in: .whitespacesAndNewlines)" not in policy or "normalized.isEmpty ? nil : normalized" not in policy:
+    raise SystemExit("Venue names must trim surrounding whitespace and reject empty values.")
+if "response.venues.filter" not in fetcher or "FoursquareVenueTextPolicy.normalizedName($0.name) != nil" not in fetcher:
+    raise SystemExit("Venue publication must reject invalid names through the production policy.")
+if "Text(FoursquareVenueTextPolicy.displayName(self.venue.name))" not in view:
+    raise SystemExit("Venue rows must render the normalized production-policy name.")
+if "Text(self.venue.name)" in view:
+    raise SystemExit("Venue rows must not render the unvalidated raw name.")
+for case in (
+    'expectName("Coffee Shop", normalized: "Coffee Shop"',
+    'expectName("", normalized: nil',
+    'expectName(" \\t\\n ", normalized: nil',
+    'expectName("  Café 東京  ", normalized: "Café 東京"',
+    'expectDisplayName("\\n", expected: "Venue"',
+):
+    if case not in tests:
+        raise SystemExit("Executable venue-name cases must remain registered.")
+if "FSQNearby/Service/FoursquareVenueTextPolicy.swift" not in runner or "Tests/FoursquareVenueTextPolicyTests/main.swift" not in runner:
+    raise SystemExit("Venue text runner must compile production policy and its focused tests.")
+if 'mktemp -d "${TMPDIR:-/tmp}/foursquare-venue-text-tests.XXXXXX"' not in runner or 'rm -rf -- "$BUILD_DIR"' not in runner:
+    raise SystemExit("Venue text runner must use and clean a bounded temporary build directory.")
+if not os.access(sys.argv[5], os.X_OK):
+    raise SystemExit("Venue text runner must remain executable.")
+if project.count("FoursquareVenueTextPolicy.swift in Sources") != 2 or project.count("/* FoursquareVenueTextPolicy.swift */") != 3:
+    raise SystemExit("Venue text policy must remain a member of the app target.")
+if makefile.count("run-foursquare-venue-text-tests.sh") != 1:
+    raise SystemExit("The canonical Make gate must execute the venue text harness once.")
+frontmatter = plan.split("---", 2)[1]
+statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
+if statuses not in (["status: implemented"], ["status: completed"]):
+    raise SystemExit("Venue text plan must record implemented or completed status.")
+if "Repository-root and external-directory `make check` passed" not in plan:
+    raise SystemExit("Venue text plan must record local verification.")
+if statuses == ["status: completed"]:
+    verification = plan.split("## Verification Completed\n", 1)[-1]
+    required_plan = (
+        "isolated mutations were rejected",
+        "Both exact-head push and pull-request checks passed",
+        "no live Foursquare request was made",
+    )
+    if (
+        "## Verification Completed\n" not in plan
+        or any(item not in verification for item in required_plan)
+        or re.search(r"\b(?:pending|todo|tbd|not run|not yet)\b", verification, re.IGNORECASE)
+    ):
+        raise SystemExit("Completed venue text plan must record local and hosted verification.")
+PY
+
+if ! grep -Fq "blank venue names are rejected before publication" "$ROOT_DIR/README.md" || \
+  ! grep -Fq "blank venue names must be rejected before publication" "$ROOT_DIR/SECURITY.md" || \
+  ! grep -Fq "Reject blank venue names before publication" "$ROOT_DIR/VISION.md" || \
+  ! grep -Fq "Rejected blank Foursquare venue names before publication" "$ROOT_DIR/CHANGES.md" || \
+  ! grep -Fq "Reject blank decoded venue names before publishing" "$ROOT_DIR/AGENTS.md"; then
+  printf '%s\n' "Project guidance must preserve the venue-name integrity boundary." >&2
   exit 1
 fi
 

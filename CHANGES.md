@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-18
+
+- Rejected blank Foursquare venue names before publication and rendered
+  accepted names after trimming surrounding whitespace.
+- Hosted simulator builds compile all fourteen Swift sources with signing disabled.
+
 ## 2026-06-17
 
 - Required successful decoded Foursquare envelopes before publishing venue

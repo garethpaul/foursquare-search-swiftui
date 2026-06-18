@@ -1,6 +1,6 @@
 ## Foursquare Search SwiftUI Vision
 
-Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+Hosted simulator builds compile all fourteen Swift sources with signing disabled.
 
 This document explains the current state and direction of the project.
 Project overview and developer docs: [`README.md`](README.md)
@@ -55,6 +55,8 @@ Current baseline:
   visible error states.
 - Require successful decoded Foursquare envelopes before publishing venue
   state while preserving valid empty venue arrays.
+- Reject blank venue names before publication and display accepted names after
+  trimming surrounding whitespace.
 - The exact final venue response URL must match the configured request before
   response metadata or files are consumed.
 - The dedicated venue session refuses redirects before configured query data can

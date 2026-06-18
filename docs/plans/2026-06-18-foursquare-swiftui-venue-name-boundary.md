@@ -1,7 +1,7 @@
 ---
 title: Foursquare SwiftUI Venue Name Boundary
 type: bugfix
-status: planned
+status: implemented
 date: 2026-06-18
 execution: code
 ---
@@ -129,6 +129,24 @@ bounded exact-head hosted evidence.
 - Filtering can turn a nonempty decoded response into the existing empty state;
   this is intentional because every rejected venue lacks a usable primary label.
 
-## Verification Completed
+## Implementation Verification
 
-Pending implementation and validation.
+The production policy trims accepted venue names, rejects empty and
+whitespace-only names, preserves Unicode text, filters invalid venues before
+publication, and provides the normalized name to the SwiftUI row. The source is
+included in the application target and the focused runner compiles that same
+production file on hosts with `swiftc`.
+
+Repository-root and external-directory `make check` passed within Linux
+capabilities. The gate truthfully skipped executable Swift tests and Xcode
+project parsing because `swiftc` and `xcodebuild` are unavailable. Shell syntax,
+exact-diff whitespace, runner mode, project membership, generated-artifact, and
+credential-shaped addition checks passed.
+
+Thirteen isolated mutations were rejected across normalization, required blank
+and Unicode cases, publication filtering, row rendering, runner source and
+mode, Xcode membership, Make wiring, guidance, plan status, and local evidence.
+
+The pushed macOS implementation checks remain the authority for executable
+Swift and simulator compilation. Exact run identifiers will be added before
+this plan is marked completed.
