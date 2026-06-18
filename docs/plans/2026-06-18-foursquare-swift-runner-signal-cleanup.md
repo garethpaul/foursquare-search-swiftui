@@ -1,7 +1,7 @@
 ---
 title: Foursquare Swift Runner Signal Cleanup
 type: bugfix
-status: planned
+status: completed
 date: 2026-06-18
 execution: code
 ---
@@ -10,7 +10,8 @@ execution: code
 
 ## Status
 
-Planned. Implementation and exact-head hosted verification are not yet complete.
+Completed. The runner changes, local validation, mutation checks, and exact
+implementation-head hosted verification are complete.
 
 ## Context
 
@@ -50,13 +51,21 @@ returned status 143 after TERM and left its newly created build directory in
 - The pull request is stacked on the venue-name boundary and must retain its
   intended base ordering.
 
-## Verification Required
+## Verification Completed
 
-- `sh -n` for the baseline checker and both runners.
-- Focused fake-compiler success, failure-status, and TERM-cleanup probes for
-  both runners.
-- `make check`, `make lint`, `make test`, and `make build` from the repository.
-- Absolute-Makefile `make check` from `/tmp`.
-- Mutation, diff, mode, artifact, and credential-shaped addition audits.
-- Successful canonical push and pull-request checks on the exact implementation
-  head and on the final completed-plan evidence head.
+- `sh -n` passed for the baseline checker and both runners.
+- Focused fake compilers proved success cleanup, compiler status 42
+  propagation, and TERM status 143 without a leaked build directory for both
+  runners.
+- `make check`, `make lint`, `make test`, and `make build` passed from the
+  repository. Absolute-Makefile `make check` also passed from `/tmp`.
+- Isolated mutations removing direct cleanup, restoring an exit-only TERM
+  binding, and completing this plan before hosted evidence were rejected.
+- Exact diff, executable-mode, generated-artifact, whitespace, and
+  credential-shaped addition audits passed.
+- Exact implementation head `7fe403ad832c8b4124a61741462bb89970d5b4f7`
+  passed push run `27747867228` and pull-request run `27747868221` on macOS.
+  Both canonical runs exercised the production Swift harnesses and completed
+  successfully.
+- Linux could not run Swift or Xcode, and no live Foursquare request,
+  simulator interaction, or physical-device behavior was exercised.

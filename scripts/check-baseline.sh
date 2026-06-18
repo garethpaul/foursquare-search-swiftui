@@ -858,8 +858,27 @@ for runner in runners:
 
 frontmatter = plan.split("---", 2)[1]
 statuses = re.findall(r"^status: .+$", frontmatter, flags=re.MULTILINE)
-if statuses != ["status: planned"] or "## Status\n\nPlanned." not in plan:
-    raise SystemExit("Swift runner signal cleanup plan must remain planned until hosted verification completes.")
+verification_heading = "## Verification Completed\n"
+verification = plan.split(verification_heading, 1)[-1]
+required_evidence = (
+    "status: completed",
+    "Completed. The runner changes",
+    "compiler status 42",
+    "TERM status 143",
+    "Absolute-Makefile `make check` also passed from `/tmp`",
+    "Isolated mutations removing direct cleanup",
+    "`7fe403ad832c8b4124a61741462bb89970d5b4f7`",
+    "push run `27747867228`",
+    "pull-request run `27747868221`",
+    "no live Foursquare request",
+)
+if (
+    statuses != ["status: completed"]
+    or verification_heading not in plan
+    or any(item not in plan for item in required_evidence)
+    or re.search(r"\b(?:pending|todo|tbd|not yet)\b", verification, re.IGNORECASE)
+):
+    raise SystemExit("Swift runner signal cleanup plan must record completed local and hosted evidence.")
 PY
 
 if ! grep -Fq "decoded Foursquare envelope requires meta code 200" "$ROOT_DIR/README.md" || \
