@@ -7,7 +7,7 @@
 
 `garethpaul/foursquare-search-swiftui` is an Apple platform application or Objective-C/Swift sample. List Nearby Venues with SwiftUI
 
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (13).
+This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift app sources with focused Swift policy harnesses.
 
 ## Repository Contents
 
@@ -25,7 +25,7 @@ Additional scan context:
 - Source directories: FSQNearby, FSQNearby.xcodeproj
 - Dependency and build manifests: none detected
 - Entry points or build surfaces: FSQNearby.xcodeproj
-- Test-looking files: no obvious test files detected
+- Test-looking files: focused Swift policy harnesses under `Tests/`
 
 ## Getting Started
 
@@ -92,12 +92,14 @@ start, and image loading ignores empty image response bodies before publishing
 data. Accepted image responses must declare an `image/*` Content-Type before
 temporary-file reads, are downloaded to temporary files, and are capped at
 5 MiB using both declared and actual byte counts before loading them into app
-memory. SwiftUI icon rendering ignores undecodable image payloads instead of
-replacing the current icon with a blank image.
+memory. SwiftUI icon rendering checks image metadata before decode, rejects
+images above 4,096 pixels per side or 4,000,000 decoded pixels, and ignores
+undecodable image payloads instead of replacing the current icon with a blank
+image.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
-Hosted simulator builds compile all fourteen Swift sources with signing disabled.
+Hosted simulator builds compile all fifteen Swift sources with signing disabled.
 
 ## Configuration and Secrets
 

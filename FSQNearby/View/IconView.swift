@@ -23,7 +23,8 @@ struct IconView: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width:30, height:30)
         }.onReceive(imageLoader.didChange) { data in
-            if let image = UIImage(data: data) {
+            if ImageDecodePolicy.acceptsImageData(data),
+                let image = UIImage(data: data) {
                 self.image = image
             }
         }.background(Color.black)

@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-19
+
+- Bounded SwiftUI icon image decoding by inspecting image metadata before
+  `UIImage(data:)`, rejecting images above 4,096 pixels per side or 4,000,000
+  decoded pixels, and adding focused executable policy tests.
+- Hosted simulator builds compile all fifteen Swift sources with signing disabled.
+
 ## 2026-06-18
 
 - Rejected blank Foursquare venue names before publication and rendered

@@ -51,6 +51,7 @@ for path in \
   "FSQNearby/Service/VenueFetcher.swift" \
   "FSQNearby/Service/FoursquareEnvelopePolicy.swift" \
   "FSQNearby/Service/FoursquareVenueTextPolicy.swift" \
+  "FSQNearby/Service/ImageDecodePolicy.swift" \
   "FSQNearby/Service/ImageLoader.swift" \
   "FSQNearby/View/AddressView.swift" \
   "FSQNearby/View/CategoryIconView.swift" \
@@ -86,8 +87,10 @@ for path in \
   "docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md" \
   "scripts/run-foursquare-envelope-policy-tests.sh" \
   "scripts/run-foursquare-venue-text-tests.sh" \
+  "scripts/run-image-decode-policy-tests.sh" \
   "Tests/FoursquareEnvelopePolicyTests/main.swift" \
   "Tests/FoursquareVenueTextPolicyTests/main.swift" \
+  "Tests/ImageDecodePolicyTests/main.swift" \
   ".github/workflows/check.yml" \
   "docs/plans/2026-06-08-foursquare-search-swiftui-transport-baseline.md"; do
   require_file "$path"
@@ -341,11 +344,63 @@ if ! grep -Fq "fetcher.errorMessage" "$ROOT_DIR/FSQNearby/View/VenueListView.swi
 fi
 
 icon_view="$ROOT_DIR/FSQNearby/View/IconView.swift"
-if ! grep -Fq "if let image = UIImage(data: data)" "$icon_view" ||
+if ! grep -Fq "let image = UIImage(data: data)" "$icon_view" ||
+  ! grep -Fq "ImageDecodePolicy.acceptsImageData(data)" "$icon_view" ||
   grep -Fq "UIImage(data: data) ?? UIImage()" "$icon_view"; then
-  printf '%s\n' "IconView must ignore undecodable image data instead of replacing the current image with a blank one." >&2
+  printf '%s\n' "IconView must reject unbounded or undecodable image data instead of replacing the current image with a blank one." >&2
   exit 1
 fi
+
+python3 - \
+  "$ROOT_DIR/FSQNearby/Service/ImageDecodePolicy.swift" \
+  "$ROOT_DIR/Tests/ImageDecodePolicyTests/main.swift" \
+  "$ROOT_DIR/scripts/run-image-decode-policy-tests.sh" \
+  "$ROOT_DIR/FSQNearby.xcodeproj/project.pbxproj" \
+  "$ROOT_DIR/Makefile" <<'PY'
+import os
+import sys
+from pathlib import Path
+
+policy = Path(sys.argv[1]).read_text()
+tests = Path(sys.argv[2]).read_text()
+runner = Path(sys.argv[3]).read_text()
+project = Path(sys.argv[4]).read_text()
+makefile = Path(sys.argv[5]).read_text()
+
+for item in (
+    "CGImageSourceCreateWithData",
+    "CGImageSourceCopyPropertiesAtIndex",
+    "kCGImagePropertyPixelWidth",
+    "kCGImagePropertyPixelHeight",
+    "maxPixelDimension = 4_096",
+    "maxDecodedPixels = 4_000_000",
+    "maxDecodedPixels / pixelHeight",
+):
+    if item not in policy:
+        raise SystemExit("Image decode policy must inspect image metadata and enforce decoded pixel bounds.")
+for case in (
+    "pixelWidth: 64, pixelHeight: 64",
+    "pixelWidth: 2_000, pixelHeight: 2_000",
+    "pixelWidth: 4_097, pixelHeight: 1",
+    "pixelWidth: 1, pixelHeight: 4_097",
+    "pixelWidth: 2_000, pixelHeight: 2_001",
+    "acceptsImageData(onePixelPNG)",
+    "acceptsImageData(randomBytes)",
+    "acceptsImageData(Data())",
+):
+    if case not in tests:
+        raise SystemExit("Executable image decode policy cases must remain registered.")
+if "FSQNearby/Service/ImageDecodePolicy.swift" not in runner or "Tests/ImageDecodePolicyTests/main.swift" not in runner:
+    raise SystemExit("Image decode runner must compile production policy and its focused tests.")
+if 'mktemp -d "${TMPDIR:-/tmp}/image-decode-policy-tests.XXXXXX"' not in runner or 'rm -rf -- "$BUILD_DIR"' not in runner:
+    raise SystemExit("Image decode runner must use and clean a bounded temporary build directory.")
+if not os.access(sys.argv[3], os.X_OK):
+    raise SystemExit("Image decode runner must remain executable.")
+if project.count("ImageDecodePolicy.swift in Sources") != 2 or project.count("/* ImageDecodePolicy.swift */") != 3:
+    raise SystemExit("Image decode policy must remain a member of the app target.")
+if makefile.count("run-image-decode-policy-tests.sh") != 1:
+    raise SystemExit("The canonical Make gate must execute the image decode policy harness once.")
+PY
 
 if grep -Eq 'first!|location\.(address|city|country)!|\(categories\.first!\.icon\?\.iconPrefix\)!' \
   "$ROOT_DIR/FSQNearby/View/AddressView.swift" \
@@ -492,7 +547,7 @@ if ! grep -Fq "Run baseline and compile Swift sources" "$CI_WORKFLOW" || \
 fi
 
 for hosted_build_doc in AGENTS.md README.md SECURITY.md VISION.md CHANGES.md; do
-  if ! grep -Fq "Hosted simulator builds compile all fourteen Swift sources with signing disabled." "$ROOT_DIR/$hosted_build_doc"; then
+  if ! grep -Fq "Hosted simulator builds compile all fifteen Swift sources with signing disabled." "$ROOT_DIR/$hosted_build_doc"; then
     printf '%s\n' "$hosted_build_doc must document hosted simulator compilation." >&2
     exit 1
   fi

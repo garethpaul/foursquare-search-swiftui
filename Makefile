@@ -9,6 +9,7 @@ check:
 	@if command -v "$(SWIFTC)" >/dev/null 2>&1; then \
 		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-envelope-policy-tests.sh"; \
 		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-foursquare-venue-text-tests.sh"; \
+		SWIFTC="$(SWIFTC)" "$(ROOT)/scripts/run-image-decode-policy-tests.sh"; \
 	else \
 		echo "swiftc unavailable; executable Foursquare policy tests skipped"; \
 	fi

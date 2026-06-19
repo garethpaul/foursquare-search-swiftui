@@ -1,6 +1,6 @@
 ## Foursquare Search SwiftUI Vision
 
-Hosted simulator builds compile all fourteen Swift sources with signing disabled.
+Hosted simulator builds compile all fifteen Swift sources with signing disabled.
 
 This document explains the current state and direction of the project.
 Project overview and developer docs: [`README.md`](README.md)
@@ -49,6 +49,9 @@ Current baseline:
   unreviewed second destination.
 - Remote image payloads use temporary-file downloads and are bounded to 5 MiB
   by response metadata and actual file size before entering app memory.
+- Image metadata is checked before UIKit decode, and images above 4,096 pixels
+  per side or 4,000,000 decoded pixels are rejected before SwiftUI icon state
+  is replaced.
 - Venue search payloads use temporary-file downloads and are bounded to 2 MiB
   by response metadata and actual file size before decoding; explicit JSON media types
   are required before file reads, and empty responses remain
@@ -80,6 +83,7 @@ Next priorities:
 - Keep image media-type validation ahead of temporary-file reads
 - Keep exact final venue response URL validation ahead of all response processing
 - Keep undecodable image payload handling visible as icon rendering evolves
+- Keep decoded image pixel bounds visible as icon rendering evolves
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves
 - Keep venue JSON response sizes bounded before decoding

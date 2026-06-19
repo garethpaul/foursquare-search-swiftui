@@ -22,12 +22,12 @@
 
 ## Coding conventions
 
-- Language mix noted in the README: Swift (13).
+- Language mix noted in the README: Swift app sources with focused Swift policy harnesses.
 - Preserve legacy Xcode project settings and signing assumptions unless the change is explicitly about modernization.
 
 ## Testing guidance
 
-- No dedicated test files were detected; treat `make check` as the minimum baseline.
+- Focused Swift policy harnesses live under `Tests/`; treat `make check` as the minimum baseline.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
 
@@ -43,7 +43,7 @@
 - `FOURSQUARE_VENUE_SEARCH_URL` supplies the venue-search endpoint.
 - Keep API credentials, private endpoints, query URLs with location data, `.xcconfig` files, and `.env` files out of source control.
 - Missing configuration, empty responses, and network failures should render a visible state instead of crashing or leaving a blank list.
-- Hosted simulator builds compile all fourteen Swift sources with signing disabled.
+- Hosted simulator builds compile all fifteen Swift sources with signing disabled.
 - Venue and image URLSession tasks should stay tied to their observable object lifecycles.
 - SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Image URLSession callbacks should use weak task captures before publishing downloaded data.
@@ -60,6 +60,8 @@
   require a present response object.
 - Reject blank decoded venue names before publishing, and render accepted names
   through the production normalization policy.
+- Check icon image metadata before UIKit decode and reject images above 4,096
+  pixels per side or 4,000,000 decoded pixels.
 
 ## Agent workflow
 

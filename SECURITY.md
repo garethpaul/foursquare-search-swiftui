@@ -1,6 +1,6 @@
 # Security Policy
 
-Hosted simulator builds compile all fourteen Swift sources with signing disabled.
+Hosted simulator builds compile all fifteen Swift sources with signing disabled.
 
 ## Supported Versions
 
@@ -65,6 +65,8 @@ request is sent to an unreviewed destination.
 Remote image responses should use temporary-file downloads and be rejected
 above 5 MiB using both response length metadata and actual file size before
 loading them into app memory.
+Image metadata should be checked before UIKit decode, and images above 4,096
+pixels per side or 4,000,000 decoded pixels should be rejected.
 Undecodable image payloads should be ignored before replacing SwiftUI icon
 state.
 
