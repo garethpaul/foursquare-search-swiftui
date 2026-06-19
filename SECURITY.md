@@ -1,5 +1,7 @@
 # Security Policy
 
+Hosted simulator builds compile all fifteen Swift sources with signing disabled.
+
 ## Supported Versions
 
 The supported security scope for `foursquare-search-swiftui` is the current default branch, `master`. Older commits, tags, branches, forks, demos, and generated artifacts are not actively supported unless the repository explicitly marks them as maintained.
@@ -33,7 +35,8 @@ Helpful reports include:
 - Review found shell execution, subprocess, or dynamic evaluation surfaces; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.
 - GitHub Actions runs the static `make check` transport baseline and Xcode
-  project parse with read-only repository permissions before review.
+  project parse with read-only repository permissions before review. It does not persist checkout credentials
+  after source retrieval.
 
 ## Mobile Privacy Notes
 
@@ -42,12 +45,28 @@ If this project requests device permissions such as location, camera, microphone
 Image URL userinfo and fragments should be rejected before requests start.
 Venue search responses should use temporary-file downloads and reject empty or
 oversized JSON bodies before decoding; the maintained limit is 2 MiB using
-declared and actual file sizes.
+declared and actual file sizes. They must also declare an explicit JSON media type
+before the downloaded file is read.
+A decoded envelope must require meta code 200 before venue state is published,
+and it must include a response object.
+Decoded blank venue names must be rejected before publication, and accepted
+names should be trimmed before display.
+The exact final venue response URL must match the configured request before
+response processing. The dedicated venue session must refuse redirects before a
+redirect destination can receive private configured query data.
+SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 Empty image response bodies should be ignored before publishing image data to
 views.
+Remote image responses should declare an `image/*` media type before temporary
+file attributes or bytes are read.
+Their exact final URL should match the validated image request before response
+processing. The dedicated image session must refuse redirects before a second
+request is sent to an unreviewed destination.
 Remote image responses should use temporary-file downloads and be rejected
 above 5 MiB using both response length metadata and actual file size before
 loading them into app memory.
+Image metadata should be checked before UIKit decode, and images above 4,096
+pixels per side or 4,000,000 decoded pixels should be rejected.
 Undecodable image payloads should be ignored before replacing SwiftUI icon
 state.
 

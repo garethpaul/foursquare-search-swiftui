@@ -8,18 +8,43 @@
 
 import Foundation
 
+private final class VenueRedirectRejectingDelegate: NSObject, URLSessionTaskDelegate {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        completionHandler(nil)
+    }
+}
+
 public class VenueFetcher: ObservableObject {
     private let maxVenuePayloadBytes = 2 * 1024 * 1024
+    private let sessionDelegate: VenueRedirectRejectingDelegate
+    private let venueSession: URLSession
     @Published var venues = [Venue]()
     @Published var errorMessage: String?
     private var task: URLSessionDownloadTask?
     
     init() {
+        let sessionDelegate = VenueRedirectRejectingDelegate()
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15.0
+        configuration.timeoutIntervalForResource = 30.0
+        self.sessionDelegate = sessionDelegate
+        self.venueSession = URLSession(
+            configuration: configuration,
+            delegate: sessionDelegate,
+            delegateQueue: nil
+        )
         load()
     }
 
     deinit {
         task?.cancel()
+        venueSession.invalidateAndCancel()
     }
     
     private func load() {
@@ -28,7 +53,7 @@ public class VenueFetcher: ObservableObject {
             return
         }
 
-        task = URLSession.shared.downloadTask(with: url) { [weak self] location, response, error in
+        task = venueSession.downloadTask(with: url) { [weak self] location, response, error in
             guard let self = self else { return }
 
             if error != nil {
@@ -37,7 +62,9 @@ public class VenueFetcher: ObservableObject {
             }
 
             guard let httpResponse = response as? HTTPURLResponse,
+                httpResponse.url == url,
                 (200..<300).contains(httpResponse.statusCode),
+                self.isJSONResponse(httpResponse),
                 httpResponse.expectedContentLength < 0 ||
                     httpResponse.expectedContentLength <= Int64(self.maxVenuePayloadBytes),
                 let location = location,
@@ -54,7 +81,16 @@ public class VenueFetcher: ObservableObject {
 
             do {
                 let foursquareSearch = try JSONDecoder().decode(FoursquareSearch.self, from: data)
-                let venues = foursquareSearch.response?.venues ?? []
+                guard FoursquareEnvelopePolicy.accepts(
+                    metaCode: foursquareSearch.meta?.code,
+                    hasResponse: foursquareSearch.response != nil
+                ), let response = foursquareSearch.response else {
+                    self.setError("Venue search returned an invalid response.")
+                    return
+                }
+                let venues = response.venues.filter {
+                    FoursquareVenueTextPolicy.normalizedName($0.name) != nil
+                }
                 DispatchQueue.main.async {
                     self.errorMessage = venues.isEmpty ? "No venues found." : nil
                     self.venues = venues
@@ -64,6 +100,18 @@ public class VenueFetcher: ObservableObject {
             }
         }
         task?.resume()
+    }
+
+    private func isJSONResponse(_ response: HTTPURLResponse) -> Bool {
+        guard let contentType = response.value(forHTTPHeaderField: "Content-Type"),
+            let mediaType = contentType.split(separator: ";", maxSplits: 1).first?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased() else {
+            return false
+        }
+
+        return mediaType == "application/json" ||
+            (mediaType.hasPrefix("application/") && mediaType.hasSuffix("+json"))
     }
 
     private func venueSearchURL() -> URL? {

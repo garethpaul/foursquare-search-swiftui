@@ -16,7 +16,7 @@ struct VenueItemView: View {
         GeometryReader { geometry in
             HStack(spacing: 0) {
                 VStack(alignment:.leading) {
-                    Text(self.venue.name)
+                    Text(FoursquareVenueTextPolicy.displayName(self.venue.name))
                     AddressView(location: self.venue.location)
                 }   .frame(width: geometry.size.width / 2, alignment: .leading)
                 

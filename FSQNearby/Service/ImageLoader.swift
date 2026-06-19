@@ -9,8 +9,22 @@
 import Combine
 import Foundation
 
+private final class ImageRedirectRejectingDelegate: NSObject, URLSessionTaskDelegate {
+    func urlSession(
+        _ session: URLSession,
+        task: URLSessionTask,
+        willPerformHTTPRedirection response: HTTPURLResponse,
+        newRequest request: URLRequest,
+        completionHandler: @escaping (URLRequest?) -> Void
+    ) {
+        completionHandler(nil)
+    }
+}
+
 class ImageLoader: ObservableObject {
     private let maxImagePayloadBytes = 5 * 1024 * 1024
+    private let sessionDelegate: ImageRedirectRejectingDelegate
+    private let imageSession: URLSession
     private var url: String = ""
     private var task: URLSessionDownloadTask?
     var didChange = PassthroughSubject<Data, Never>()
@@ -22,12 +36,23 @@ class ImageLoader: ObservableObject {
     }
 
     init(urlString:String) {
+        let sessionDelegate = ImageRedirectRejectingDelegate()
+        let configuration = URLSessionConfiguration.default
+        configuration.timeoutIntervalForRequest = 15.0
+        configuration.timeoutIntervalForResource = 30.0
+        self.sessionDelegate = sessionDelegate
+        self.imageSession = URLSession(
+            configuration: configuration,
+            delegate: sessionDelegate,
+            delegateQueue: nil
+        )
         self.url = urlString
         load(urlString: url)
     }
 
     deinit {
         task?.cancel()
+        imageSession.invalidateAndCancel()
     }
     
     private func load(urlString:String) {
@@ -37,11 +62,13 @@ class ImageLoader: ObservableObject {
             url.user == nil,
             url.password == nil,
             url.fragment == nil else { return }
-        task = URLSession.shared.downloadTask(with: url) { [weak self] location, response, error in
+        task = imageSession.downloadTask(with: url) { [weak self] location, response, error in
             guard let self = self else { return }
             guard error == nil,
                 let httpResponse = response as? HTTPURLResponse,
+                httpResponse.url == url,
                 (200..<300).contains(httpResponse.statusCode),
+                self.isImageResponse(httpResponse),
                 httpResponse.expectedContentLength < 0 ||
                     httpResponse.expectedContentLength <= Int64(self.maxImagePayloadBytes),
                 let location = location,
@@ -58,5 +85,16 @@ class ImageLoader: ObservableObject {
             }
         }
         task?.resume()
+    }
+
+    private func isImageResponse(_ response: HTTPURLResponse) -> Bool {
+        guard let contentType = response.value(forHTTPHeaderField: "Content-Type"),
+            let mediaType = contentType.split(separator: ";", maxSplits: 1).first?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased() else {
+            return false
+        }
+
+        return mediaType.hasPrefix("image/") && mediaType.count > "image/".count
     }
 }

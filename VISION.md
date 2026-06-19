@@ -1,5 +1,7 @@
 ## Foursquare Search SwiftUI Vision
 
+Hosted simulator builds compile all fifteen Swift sources with signing disabled.
+
 This document explains the current state and direction of the project.
 Project overview and developer docs: [`README.md`](README.md)
 
@@ -39,11 +41,30 @@ Current baseline:
   category/address rendering.
 - Image loading retains and cancels URLSession tasks when loaders are released.
 - Empty image response bodies are ignored before image data is published.
+- Remote image responses require an explicit `image/*` media type before
+  temporary-file reads.
+- Remote image responses must retain exact request URL provenance before status,
+  media, size, file, or decode processing.
+- The dedicated image session refuses redirects before contacting an
+  unreviewed second destination.
 - Remote image payloads use temporary-file downloads and are bounded to 5 MiB
   by response metadata and actual file size before entering app memory.
+- Image metadata is checked before UIKit decode, and images above 4,096 pixels
+  per side or 4,000,000 decoded pixels are rejected before SwiftUI icon state
+  is replaced.
 - Venue search payloads use temporary-file downloads and are bounded to 2 MiB
-  by response metadata and actual file size before decoding; empty responses
-  remain visible error states.
+  by response metadata and actual file size before decoding; explicit JSON media types
+  are required before file reads, and empty responses remain
+  visible error states.
+- Require successful decoded Foursquare envelopes before publishing venue
+  state while preserving valid empty venue arrays.
+- Reject blank venue names before publication and display accepted names after
+  trimming surrounding whitespace.
+- The exact final venue response URL must match the configured request before
+  response metadata or files are consumed.
+- The dedicated venue session refuses redirects before configured query data can
+  be forwarded to another destination.
+- SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Undecodable image payloads are ignored before SwiftUI icon state is replaced.
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
@@ -59,7 +80,10 @@ Next priorities:
 - Add tests or manual verification notes for decoded venue responses
 - Keep image request lifecycle behavior visible as the view layer evolves
 - Keep empty image response handling visible as image loading evolves
+- Keep image media-type validation ahead of temporary-file reads
+- Keep exact final venue response URL validation ahead of all response processing
 - Keep undecodable image payload handling visible as icon rendering evolves
+- Keep decoded image pixel bounds visible as icon rendering evolves
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves
 - Keep venue JSON response sizes bounded before decoding

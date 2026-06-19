@@ -7,7 +7,7 @@
 
 `garethpaul/foursquare-search-swiftui` is an Apple platform application or Objective-C/Swift sample. List Nearby Venues with SwiftUI
 
-This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (13).
+This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift app sources with focused Swift policy harnesses.
 
 ## Repository Contents
 
@@ -25,7 +25,7 @@ Additional scan context:
 - Source directories: FSQNearby, FSQNearby.xcodeproj
 - Dependency and build manifests: none detected
 - Entry points or build surfaces: FSQNearby.xcodeproj
-- Test-looking files: no obvious test files detected
+- Test-looking files: focused Swift policy harnesses under `Tests/`
 
 ## Getting Started
 
@@ -61,9 +61,14 @@ make build
 make check
 ```
 
+Use the absolute Makefile path to run the same gates from another working
+directory. Verification resolves the checker relative to the loaded Makefile
+rather than the caller's directory.
+
 GitHub Actions runs `make check` through `.github/workflows/check.yml` on
 macOS for pushes, pull requests, and manual dispatches, including Xcode project
-parsing without live credentials.
+parsing without live credentials. The workflow does not persist checkout credentials
+after source retrieval.
 
 The `lint`, `test`, and `build` targets currently delegate to the static
 baseline so the repository has a consistent local gate even when Xcode is not
@@ -75,16 +80,26 @@ runtime diagnostics do not use `print`. Venue search requests are also retained
 and cancelled when fetchers are deallocated. Venue endpoint parsing rejects
 embedded userinfo and fragments before starting a request. Venue search JSON is
 downloaded to a temporary file and rejected when its declared or actual body
-exceeds 2 MiB; empty bodies use the existing visible error state. Image request
+exceeds 2 MiB or lacks an explicit JSON Content-Type; empty bodies use the
+existing visible error state. A decoded Foursquare envelope requires meta code 200
+and a present response object before venue state is published; valid empty
+venue arrays still use the normal "No venues found" state. Accepted venue
+names are trimmed, and blank venue names are rejected before publication.
+Image request
 callbacks use weak task captures so retained tasks do not keep released loaders
 alive. Image URL userinfo and fragments are rejected before image requests
 start, and image loading ignores empty image response bodies before publishing
-data. Accepted image responses are downloaded to temporary files and capped at
+data. Accepted image responses must declare an `image/*` Content-Type before
+temporary-file reads, are downloaded to temporary files, and are capped at
 5 MiB using both declared and actual byte counts before loading them into app
-memory. SwiftUI icon rendering ignores undecodable image payloads instead of
-replacing the current icon with a blank image.
+memory. SwiftUI icon rendering checks image metadata before decode, rejects
+images above 4,096 pixels per side or 4,000,000 decoded pixels, and ignores
+undecodable image payloads instead of replacing the current icon with a blank
+image.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
+
+Hosted simulator builds compile all fifteen Swift sources with signing disabled.
 
 ## Configuration and Secrets
 
@@ -103,11 +118,21 @@ When the required SDK or runtime is unavailable, use static checks and source re
   visible state instead of crashing or leaving a blank list.
 - Venue and image URLSession tasks should stay tied to their observable object
   lifecycles.
+- SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Image URLSession callbacks should use weak task captures before publishing
   downloaded data.
 - Image URL userinfo and fragments should be rejected before starting requests.
 - Empty image response bodies should not be published to SwiftUI views.
 - Remote image bodies should not exceed the 5 MiB loader boundary.
+- Remote image responses should declare an `image/*` media type before file
+  reads.
+- Require the exact final image response URL to match the validated request
+  before status, media, size, file, or decode processing.
+- The dedicated image session refuses redirects before an unreviewed target can
+  receive a second request.
+- Require the exact final venue response URL to match the configured request
+  before status, media, size, file, or decode processing. The dedicated venue session refuses redirects before private query data can be
+  forwarded.
 - Undecodable image payloads should not replace the current SwiftUI icon with a
   blank image.
 
@@ -127,6 +152,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   venue request lifecycle guardrails.
 - See `docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md` for
   venue response memory limits.
+- See `docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md` for venue
+  response provenance validation.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-weak-capture.md` for
   image request callback capture guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md` for venue
@@ -137,9 +164,15 @@ When the required SDK or runtime is unavailable, use static checks and source re
   image response guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-image-decode-guard.md` for
   undecodable image payload guardrails.
+- See `docs/plans/2026-06-13-foursquare-image-content-type-boundary.md` for
+  remote image media-type validation.
 - See `docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md` for local
   verification target guardrails.
 - See `docs/plans/2026-06-10-ci-baseline.md` for the GitHub Actions baseline.
+- See `docs/plans/2026-06-16-hosted-simulator-build.md` for the signing-disabled
+  macOS simulator compiler boundary.
+- See `docs/plans/2026-06-12-checkout-credential-boundary.md` for checkout token
+  isolation in the hosted macOS job.
 
 ## Contributing
 

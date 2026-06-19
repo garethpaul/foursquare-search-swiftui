@@ -1,7 +1,56 @@
 # Changes
 
+## 2026-06-19
+
+- Bounded SwiftUI icon image decoding by inspecting image metadata before
+  `UIImage(data:)`, rejecting images above 4,096 pixels per side or 4,000,000
+  decoded pixels, and adding focused executable policy tests.
+- Hosted simulator builds compile all fifteen Swift sources with signing disabled.
+
+## 2026-06-18
+
+- Rejected blank Foursquare venue names before publication and rendered
+  accepted names after trimming surrounding whitespace.
+- Hosted simulator builds compile all fourteen Swift sources with signing disabled.
+
+## 2026-06-17
+
+- Required successful decoded Foursquare envelopes before publishing venue
+  state and added an executable production-policy harness.
+
+## 2026-06-16
+
+- Hosted simulator builds compile all thirteen Swift sources with signing disabled.
+
+## 2026-06-15
+
+- Refused redirects in the dedicated image session before an unreviewed target
+  can receive a second request.
+- SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
+- Refused redirects in the dedicated venue session before configured query data
+  can be forwarded to another destination.
+- Added delegate, session-routing, lifecycle, documentation, mutation, and
+  completed-evidence contracts.
+
+## 2026-06-13
+
+- Made static verification independent of the caller's working directory by
+  resolving the baseline checker from the loaded Makefile.
+- Required exact final image response URLs before response and file processing.
+- Required the exact final venue response URL to match the configured request
+  before status, media, size, file, or decode processing.
+- Added provenance ordering, single-request, generic-error, documentation, and
+  evidence contracts.
+- Required remote image responses to declare an `image/*` Content-Type before
+  temporary-file metadata or bytes are read.
+- Added a static image media-type and validation-order contract.
+
 ## 2026-06-12
 
+- Stopped GitHub Actions checkout credential persistence and added an exact
+  contract for the single pinned checkout step.
+- Required explicit JSON response media types before venue response files are
+  read and decoded.
 - Bounded accepted Foursquare venue search JSON to 2 MiB using a temporary-file
   download, response length metadata, and actual file size before decoding.
 - Routed empty and oversized venue bodies through the existing visible error
