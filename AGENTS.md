@@ -45,6 +45,8 @@
 - Missing configuration, empty responses, and network failures should render a visible state instead of crashing or leaving a blank list.
 - Hosted simulator builds compile all fifteen Swift sources with signing disabled.
 - Venue and image URLSession tasks should stay tied to their observable object lifecycles.
+- Keep the venue fetcher owned by the hosted SwiftUI root and injected into
+  `VenueListView`; child reconstruction must not start duplicate requests.
 - SwiftUI venue and image networking use 15-second request timeouts and 30-second resource timeouts.
 - Image URLSession callbacks should use weak task captures before publishing downloaded data.
 - Image URL userinfo and fragments should be rejected before starting requests.

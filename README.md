@@ -77,7 +77,9 @@ disabled, the venue-search URL is supplied through a local build setting, venue
 and image loads require HTTPS URLs with hosts, optional venue fields are
 rendered safely, image requests are cancelled when loaders are deallocated, and
 runtime diagnostics do not use `print`. Venue search requests are also retained
-and cancelled when fetchers are deallocated. Venue endpoint parsing rejects
+and cancelled when fetchers are deallocated. The hosted SwiftUI root owns one
+venue fetcher and injects it into the list, so iOS 13 child-view reconstruction
+does not start duplicate venue requests. Venue endpoint parsing rejects
 embedded userinfo and fragments before starting a request. Venue search JSON is
 downloaded to a temporary file and rejected when its declared or actual body
 exceeds 2 MiB or lacks an explicit JSON Content-Type; empty bodies use the
@@ -150,6 +152,8 @@ Hosted simulator builds compile all fifteen Swift sources with signing disabled.
   image request lifecycle guardrails.
 - See `docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md` for
   venue request lifecycle guardrails.
+- See `docs/plans/2026-06-26-venue-fetcher-root-ownership.md` for iOS 13
+  SwiftUI request-owner identity.
 - See `docs/plans/2026-06-12-foursquare-venue-response-size-boundary.md` for
   venue response memory limits.
 - See `docs/plans/2026-06-13-foursquare-venue-final-url-boundary.md` for venue

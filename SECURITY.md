@@ -69,6 +69,8 @@ Image metadata should be checked before UIKit decode, and images above 4,096
 pixels per side or 4,000,000 decoded pixels should be rejected.
 Undecodable image payloads should be ignored before replacing SwiftUI icon
 state.
+The hosted SwiftUI root should own the venue fetcher and inject it into child
+views so redraws cannot create duplicate location-intent requests on iOS 13.
 
 ## Dependency and Supply Chain Security
 

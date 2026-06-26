@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct VenueListView: View {
-    @ObservedObject var fetcher = VenueFetcher()
+    @ObservedObject var fetcher: VenueFetcher
     
     var body: some View {
         Group {
