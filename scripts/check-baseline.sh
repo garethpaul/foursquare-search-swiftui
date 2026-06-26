@@ -350,6 +350,37 @@ fi
 python3 "$ROOT_DIR/scripts/check-venue-fetcher-ownership.py"
 python3 "$ROOT_DIR/scripts/check-venue-fetcher-ownership.py" --mutation-test
 
+for ownership_evidence in \
+  "status: completed" \
+  "9a2d73fc78d8ea6c64f5c2376c536b4aa3a9fb0d" \
+  "28247639075" \
+  "28247642376" \
+  "28247640315" \
+  "Actions, Python, and Swift" \
+  "no live Foursquare request or credential"; do
+  if ! grep -Fq "$ownership_evidence" "$VENUE_OWNERSHIP_PLAN"; then
+    printf '%s\n' "Venue fetcher ownership plan must preserve completed evidence: $ownership_evidence" >&2
+    exit 1
+  fi
+done
+
+for ownership_guidance in \
+  "hosted SwiftUI root owns one" \
+  "hosted SwiftUI root should own" \
+  "hosted SwiftUI root owns one venue fetcher" \
+  "venue fetcher owned by the hosted SwiftUI root"; do
+  case "$ownership_guidance" in
+    *should*) document="$ROOT_DIR/SECURITY.md" ;;
+    *"owns one venue"*) document="$ROOT_DIR/VISION.md" ;;
+    *"owned by"*) document="$ROOT_DIR/AGENTS.md" ;;
+    *) document="$ROOT_DIR/README.md" ;;
+  esac
+  if ! grep -Fq "$ownership_guidance" "$document"; then
+    printf '%s\n' "Project guidance must preserve root-owned venue fetcher behavior: $ownership_guidance" >&2
+    exit 1
+  fi
+done
+
 icon_view="$ROOT_DIR/FSQNearby/View/IconView.swift"
 if ! grep -Fq "let image = UIImage(data: data)" "$icon_view" ||
   ! grep -Fq "ImageDecodePolicy.acceptsImageData(data)" "$icon_view" ||
