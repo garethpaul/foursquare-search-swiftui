@@ -30,6 +30,7 @@ HOSTED_BUILD_PLAN="$ROOT_DIR/docs/plans/2026-06-16-hosted-simulator-build.md"
 ENVELOPE_STATUS_PLAN="$ROOT_DIR/docs/plans/2026-06-17-foursquare-envelope-status.md"
 VENUE_TEXT_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swiftui-venue-name-boundary.md"
 SWIFT_RUNNER_SIGNAL_PLAN="$ROOT_DIR/docs/plans/2026-06-18-foursquare-swift-runner-signal-cleanup.md"
+VENUE_OWNERSHIP_PLAN="$ROOT_DIR/docs/plans/2026-06-26-venue-fetcher-root-ownership.md"
 
 require_file() {
   path=$1
@@ -48,6 +49,7 @@ for path in \
   "VISION.md" \
   "FSQNearby.xcodeproj/project.pbxproj" \
   "FSQNearby/Info.plist" \
+  "FSQNearby/ContentView.swift" \
   "FSQNearby/Service/VenueFetcher.swift" \
   "FSQNearby/Service/FoursquareEnvelopePolicy.swift" \
   "FSQNearby/Service/FoursquareVenueTextPolicy.swift" \
@@ -58,6 +60,7 @@ for path in \
   "FSQNearby/View/CategoryView.swift" \
   "FSQNearby/View/IconView.swift" \
   "FSQNearby/View/VenueListView.swift" \
+  "docs/plans/2026-06-26-venue-fetcher-root-ownership.md" \
   "docs/bugs/p2-ios-global-ats-bypass-d3b1b3edbda3cef9.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-task-lifecycle.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-empty-data.md" \
@@ -73,6 +76,7 @@ for path in \
   "docs/plans/2026-06-15-foursquare-image-redirect-refusal.md" \
   "docs/plans/2026-06-15-swiftui-network-timeouts.md" \
   "scripts/check-swiftui-network-timeouts.py" \
+  "scripts/check-venue-fetcher-ownership.py" \
   "docs/plans/2026-06-09-foursquare-swiftui-image-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-venue-url-parts.md" \
   "docs/plans/2026-06-09-foursquare-swiftui-make-gate-aliases.md" \
@@ -342,6 +346,9 @@ if ! grep -Fq "fetcher.errorMessage" "$ROOT_DIR/FSQNearby/View/VenueListView.swi
   printf '%s\n' "VenueListView must expose error and empty states." >&2
   exit 1
 fi
+
+python3 "$ROOT_DIR/scripts/check-venue-fetcher-ownership.py"
+python3 "$ROOT_DIR/scripts/check-venue-fetcher-ownership.py" --mutation-test
 
 icon_view="$ROOT_DIR/FSQNearby/View/IconView.swift"
 if ! grep -Fq "let image = UIImage(data: data)" "$icon_view" ||

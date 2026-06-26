@@ -69,6 +69,8 @@ Current baseline:
 - Image loading uses weak task captures before publishing downloaded data.
 - Venue loading retains and cancels its URLSession task when fetchers are
   released.
+- The hosted SwiftUI root owns one venue fetcher across child-view
+  reconstruction on the iOS 13 deployment target.
 - The local Makefile exposes lint, test, build, and check targets for a stable
   pre-push gate.
 - GitHub Actions runs the static `make check` baseline on macOS before review,
@@ -86,6 +88,7 @@ Next priorities:
 - Keep decoded image pixel bounds visible as icon rendering evolves
 - Keep weak task captures visible as image loading evolves
 - Keep venue request lifecycle behavior visible as data loading evolves
+- Keep one root-owned venue fetcher across SwiftUI child-view reconstruction
 - Keep venue JSON response sizes bounded before decoding
 - Keep venue endpoint URL-part validation visible as configuration evolves
 - Keep image URL-part validation visible as remote image handling evolves

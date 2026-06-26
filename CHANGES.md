@@ -1,5 +1,26 @@
 # Changes
 
+## 2026-06-26 08:22:15 PDT
+
+- Priority: correctness / request lifecycle.
+- Moved venue-fetcher ownership from `VenueListView` to the hosted
+  `ContentView` root, preventing iOS 13 child-view reconstruction from starting
+  duplicate venue downloads.
+- Preserved the iOS 13.2 deployment target by using explicit dependency
+  injection rather than `StateObject`.
+- Added an executable ownership checker and hostile mutation restoring child
+  construction.
+- Files: `FSQNearby/ContentView.swift`, `FSQNearby/View/VenueListView.swift`,
+  `scripts/check-venue-fetcher-ownership.py`, `scripts/check-baseline.sh`,
+  `docs/plans/2026-06-26-venue-fetcher-root-ownership.md`, and synchronized
+  repository guidance.
+- Tests: focused ownership check and hostile mutation pass; all root and
+  external static Make gates pass.
+- Findings: no open pull requests or issues were present when this cycle began.
+- Blockers: local `swiftc` and `xcodebuild` are unavailable; hosted macOS is the
+  authoritative compile and simulator-build environment.
+- Next action: push the PR and verify hosted macOS before exact-head merge.
+
 ## 2026-06-19
 
 - Bounded SwiftUI icon image decoding by inspecting image metadata before
