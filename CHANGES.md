@@ -23,8 +23,7 @@
 - Findings: no open pull requests or issues were present when this cycle began.
 - Blockers: Codex review authentication may be unavailable; skip an HTTP 401
   per the continuous-maintenance instruction.
-- Next action: validate and merge the evidence-only follow-up after its exact
-  head passes hosted checks.
+- Next action: no follow-up is required after this evidence-only cycle merges.
 
 ## 2026-06-19
 
