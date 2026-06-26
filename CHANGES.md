@@ -14,12 +14,17 @@
   `scripts/check-venue-fetcher-ownership.py`, `scripts/check-baseline.sh`,
   `docs/plans/2026-06-26-venue-fetcher-root-ownership.md`, and synchronized
   repository guidance.
-- Tests: focused ownership check and hostile mutation pass; all root and
-  external static Make gates pass.
+- Tests: focused ownership check, hostile mutation, all root/external static
+  Make gates, both macOS Check runs, and CodeQL for Actions, Python, and Swift
+  pass on implementation commit `9a2d73f`.
+- Merge: PR #20 merged the hosted-green implementation as merge commit
+  `e76a351`; this follow-up preserves the completed evidence contract that was
+  recorded after that exact implementation head became green.
 - Findings: no open pull requests or issues were present when this cycle began.
-- Blockers: local `swiftc` and `xcodebuild` are unavailable; hosted macOS is the
-  authoritative compile and simulator-build environment.
-- Next action: push the PR and verify hosted macOS before exact-head merge.
+- Blockers: Codex review authentication may be unavailable; skip an HTTP 401
+  per the continuous-maintenance instruction.
+- Next action: validate and merge the evidence-only follow-up after its exact
+  head passes hosted checks.
 
 ## 2026-06-19
 
