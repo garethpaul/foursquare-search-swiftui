@@ -1,6 +1,6 @@
 # Venue Fetcher Root Ownership
 
-status: implementation_complete
+status: completed
 
 ## Goal
 
@@ -31,5 +31,13 @@ released.
 - The focused ownership check and hostile child-construction mutation pass.
 - `make lint`, `make test`, `make build`, and `make check` pass locally.
 - The absolute external Makefile `make check` gate passes from `/tmp`.
-- Local `swiftc` and `xcodebuild` are unavailable, so hosted macOS compile and
-  simulator-build verification remain pending.
+- Local `swiftc` and `xcodebuild` are unavailable; hosted macOS supplied the
+  authoritative executable policy, project parse, compile, and unsigned
+  simulator-build evidence.
+- Implementation commit `9a2d73fc78d8ea6c64f5c2376c536b4aa3a9fb0d`
+  passed push Check run `28247639075`, pull-request Check run `28247642376`,
+  and CodeQL run `28247640315` for Actions, Python, and Swift.
+- PR #20 merged that implementation as merge commit
+  `e76a3517bd73a26083d0a274093c57bb843b0feb` after the required checks passed.
+- `git diff --check` passed, and no live Foursquare request or credential was
+  used.
