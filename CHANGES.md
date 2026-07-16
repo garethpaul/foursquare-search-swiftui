@@ -1,5 +1,24 @@
 # Changes
 
+## 2026-07-16
+
+- Priority: correctness / verification integrity.
+- Fixed the `check` recipe discarding executable Swift policy suite failures.
+  Make runs each recipe line in one shell without `set -e`, so the `;` separated
+  suite list exited with only its last command's status: failures in the
+  envelope-policy and venue-text suites were silently swallowed and only the
+  image-decode suite was load-bearing.
+- `&&` chained the suites to propagate failures, matching the existing form in
+  the sibling `garethpaul/foursquare-ar-camera-ios` Makefile.
+- Added a baseline assertion requiring every swiftc policy suite except the last
+  to be `&&` chained, so the recipe cannot regress to failure swallowing.
+- Files: `Makefile`, `scripts/check-baseline.sh`.
+- Tests: `make check` passes. Suite failure propagation was measured with a
+  `swiftc` stand-in that emits stub suite binaries, since no Swift toolchain is
+  available on Linux: before the fix, failing suite 1 or 2 exited 0 and only the
+  last suite failed the gate; after the fix all three positions exit 2. The real
+  swiftc suites were not executed locally; macOS CI compiles them.
+
 ## 2026-06-26 08:22:15 PDT
 
 - Priority: correctness / request lifecycle.
