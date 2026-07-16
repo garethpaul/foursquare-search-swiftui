@@ -144,6 +144,18 @@ if ! grep -Eq '^\.PHONY: .*build.*check.*lint.*test|^\.PHONY: .*build.*lint.*tes
   exit 1
 fi
 
+# Make runs each recipe line through a single shell without "set -e", so a list of
+# ';' separated commands exits with only its last command's status and a failing
+# earlier suite is silently discarded. Every executable Swift policy suite except
+# the final one must therefore end its line with '&&' to propagate failures.
+suite_invocations=$(grep -Ec 'scripts/run-[a-z-]+-tests\.sh"' "$makefile" || true)
+chained_invocations=$(grep -Ec 'scripts/run-[a-z-]+-tests\.sh" && \\$' "$makefile" || true)
+if [ "$suite_invocations" -lt 2 ] ||
+  [ "$chained_invocations" -ne "$((suite_invocations - 1))" ]; then
+  printf '%s\n' "Makefile swiftc policy suites must be '&&' chained so a failing suite fails the gate." >&2
+  exit 1
+fi
+
 if command -v python3 >/dev/null 2>&1; then
   python3 - "$ROOT_DIR/FSQNearby/Info.plist" <<'PY'
 import plistlib
